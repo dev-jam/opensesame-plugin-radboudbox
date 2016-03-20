@@ -1,0 +1,14 @@
+description: Radboud Buttonbox 'Send Trigger' plug-in.
+version: 0.2
+author: "Bob Rosbag"
+url: "http://osdoc.cogsci.nl/"
+category: "RadboudBox"
+date: "2016"
+controls:
+-
+    label: "Value"
+    name: "value_widget"
+    tooltip: "Value to set port"
+    type: "line_edit"
+    var: "radboudbox_value"
+

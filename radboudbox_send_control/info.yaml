@@ -1,0 +1,38 @@
+description: Radboud Buttonbox 'send control' plug-in.
+version: 0.2
+author: "Bob Rosbag"
+url: "http://osdoc.cogsci.nl/"
+category: "RadboudBox"
+date: "2016"
+controls:
+-
+    label: "Send Command"
+    name: "combobox_radboudbox_command"
+    tooltip: "Send command to the RadboudBox"
+    type: "combobox"
+    var: radboudbox_command
+    options:
+      - Calibrate Sound
+      - Calibrate Voice
+      - Detect Sound
+      - Detect Voice
+      - Marker Out
+      - Pulse Out
+      - Pulse Time
+      - Analog Out 1
+      - Analog Out 2
+      - Tone
+      - Analog In 1
+      - Analog In 2
+      - Analog In 3
+      - Analog In 4
+      - LEDs Off
+      - LEDs Input
+      - LEDs Output
+- 
+    label: Command Value
+    tooltip: Command Value
+    name: line_edit_command_value
+    type: line_edit
+    var: radboudbox_command_value
+

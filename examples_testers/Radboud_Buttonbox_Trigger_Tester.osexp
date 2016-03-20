@@ -1,36 +1,37 @@
 ---
 API: 2
-OpenSesame: 3.0.5
+OpenSesame: 3.0.7
 Platform: posix
 ---
 set width 1024
-set transparent_variables "no"
+set transparent_variables no
 set title "New experiment"
-set synth_backend "legacy"
-set subject_parity "even"
+set synth_backend legacy
+set subject_parity even
 set subject_nr 0
-set start "experiment"
-set sampler_backend "legacy"
-set mouse_backend "psycho"
-set keyboard_backend "psycho"
+set start experiment
+set sampler_backend legacy
+set mouse_backend psycho
+set keyboard_backend psycho
 set height 768
-set foreground "white"
+set foreground white
 set font_size 18
-set font_italic "no"
-set font_family "mono"
-set font_bold "no"
+set font_italic no
+set font_family mono
+set font_bold no
+set experiment_path "/home/bob/src/git/opensesame_plugin_-_radboudbox"
 set description "Default description"
-set coordinates "relative"
+set coordinates relative
 set compensation 0
-set canvas_backend "psycho"
-set background "black"
+set canvas_backend psycho
+set background black
 
 define sequence experiment
-	set flush_keyboard "yes"
+	set flush_keyboard yes
 	set description "Runs a number of items in sequence"
-	run new_radboud_buttonbox_send_trigger always
+	run new_radboudbox_send_trigger always
 	run new_sketchpad_1 always
-	run new_radboud_buttonbox_send_trigger_1 always
+	run new_radboudbox_send_trigger_1 always
 	run new_sketchpad_2 always
 	run loop always
 	run new_logger always
@@ -38,13 +39,13 @@ define sequence experiment
 define loop loop
 	set skip 0
 	set repeat 1
-	set order "sequential"
-	set offset "no"
-	set item "sequence"
+	set order sequential
+	set offset no
+	set item sequence
 	set description "Repeatedly runs another item"
 	set cycles 255
-	set column_order "n"
-	set break_if "never"
+	set column_order n
+	set break_if never
 	setcycle 0 n "1"
 	setcycle 1 n "2"
 	setcycle 2 n "3"
@@ -304,22 +305,28 @@ define loop loop
 
 define logger new_logger
 	set description "Logs experimental data"
-	set auto_log "yes"
+	set auto_log yes
 
-define radboud_buttonbox_send_trigger new_radboud_buttonbox_send_trigger
+define radboudbox_send_trigger new_radboudbox_send_trigger
+	set radboudbox_value 255
+	set radboudbox_dummy no
 	set description "Radboud Buttonbox 'Send Trigger' Plug-in"
 	set bb_value 255
-	set bb_dummy "no"
+	set bb_dummy no
 
-define radboud_buttonbox_send_trigger new_radboud_buttonbox_send_trigger_1
+define radboudbox_send_trigger new_radboudbox_send_trigger_1
+	set radboudbox_value 0
+	set radboudbox_dummy no
 	set description "Radboud Buttonbox 'Send Trigger' Plug-in"
 	set bb_value 0
-	set bb_dummy "no"
+	set bb_dummy no
 
-define radboud_buttonbox_send_trigger new_radboud_buttonbox_send_trigger_2
+define radboudbox_send_trigger new_radboudbox_send_trigger_2
+	set radboudbox_value "[n]"
+	set radboudbox_dummy no
 	set description "Radboud Buttonbox 'Send Trigger' Plug-in"
 	set bb_value "[n]"
-	set bb_dummy "no"
+	set bb_dummy no
 
 define sketchpad new_sketchpad
 	set duration 1
@@ -327,18 +334,18 @@ define sketchpad new_sketchpad
 	draw textline center=1 color=white font_bold=no font_family=mono font_italic=no font_size=18 html=yes show_if=always text="Blinking lights:<br /><br />Code: [n]<br /><br />Press esc to quit." x=0 y=-32 z_index=0
 
 define sketchpad new_sketchpad_1
-	set duration "keypress"
+	set duration keypress
 	set description "Displays stimuli"
 	draw textline center=1 color=white font_bold=no font_family=mono font_italic=no font_size=18 html=yes show_if=always text="All lights should be enabled.<br /><br />Press key to continue" x=0 y=0 z_index=0
 
 define sketchpad new_sketchpad_2
-	set duration "keypress"
+	set duration keypress
 	set description "Displays stimuli"
 	draw textline center=1 color=white font_bold=no font_family=mono font_italic=no font_size=18 html=yes show_if=always text="All lights should be disabled.<br /><br />Next is a check if all triggers/lights work.<br /><br />Press key to continue<br />" x=0 y=0 z_index=0
 
 define sequence sequence
-	set flush_keyboard "yes"
+	set flush_keyboard yes
 	set description "Runs a number of items in sequence"
 	run new_sketchpad always
-	run new_radboud_buttonbox_send_trigger_2 always
+	run new_radboudbox_send_trigger_2 always
 

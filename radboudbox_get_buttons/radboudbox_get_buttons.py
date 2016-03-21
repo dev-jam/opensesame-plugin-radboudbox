@@ -139,12 +139,15 @@ class radboudbox_get_buttons(item.item, generic_response.generic_response):
             try:
                 #self.experiment.radboudbox.setLeds(self._lights)
                 self.experiment.radboudbox.clearEvents()
-                [(resp, self.experiment.end_response_interval)] = \
+                [(resp,t)] = \
                     self._resp_func(maxWait=self._timeout,
                         buttonList=self._allowed_responses,
                         timeStamped=True)
+                print(t)        
                 #[(resp, self.experiment.end_response_interval)] = self._resp_func(buttonList=self._allowed_responses)
                 #self.experiment.srbox.stop()
+                self.experiment.end_response_interval   = time.time()
+                print(self.experiment.end_response_interval)
             except Exception as e:
                 raise osexception(
                     "An error occured in radboudbox '%s': %s." % (self.name, e))

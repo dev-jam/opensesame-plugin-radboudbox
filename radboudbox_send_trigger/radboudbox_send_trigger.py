@@ -47,7 +47,6 @@ class radboudbox_send_trigger(item):
 
         # Set default experimental variables and values
         self.var.radboudbox_value = 0
-        self.var.radboudbox_dummy = u'no'
 
         # Debugging output is only visible when OpenSesame is started with the
         # --debug argument.
@@ -60,22 +59,9 @@ class radboudbox_send_trigger(item):
         # Call the parent constructor.
         item.prepare(self)
 
-        if self.var.radboudbox_dummy == u'no':
-            try:
-                from rusocsci import buttonbox
-                print(buttonbox.__file__ )
-            except ImportError:
-                debug.msg(u'The RuSocSci package could not be loaded. Check if the file is present and if the file permissions are correct.')
-
-            if not hasattr(self.experiment, "radboudbox"):
-                try:
-                    self.experiment.radboudbox = buttonbox.Buttonbox()
-                except OSError:
-                    debug.msg(u'Could not access the Radboud Buttonbox')
-        elif self.var.radboudbox_dummy == u'yes':
-            debug.msg(u'Dummy mode enabled, prepare phase')
-        else:
-            debug.msg(u'Error with dummy mode, dummy mode: %s' % self.var.radboudbox_dummy)
+        if not hasattr(self.experiment, "radboudbox_dummy"):
+            raise osexception(
+                u'You should have one instance of `pygaze_init` at the start of your experiment')
 
     def run(self):
 
@@ -84,34 +70,18 @@ class radboudbox_send_trigger(item):
         # self.set_item_onset() sets the time_[item name] variable. Optionally,
         # you can pass a timestamp, such as returned by canvas.show().
 
-        if self.var.radboudbox_dummy == u'no':
+        self.radboudbox_value = self.var.radboudbox_value
+
+        if self.experiment.radboudbox_dummy == u'no':
             ## turn trigger on
             #self.experiment.radboudbox.clearEvents()
-            self.experiment.radboudbox.sendMarker(val=self.var.radboudbox_value)
-            self.experiment.var.trigger_code = self.var.radboudbox_value
-            debug.msg(u'Sending value %s to the Radboud Buttonbox' % self.var.radboudbox_value)
-        elif self.var.radboudbox_dummy == u'yes':
-            debug.msg(u'Dummy mode enabled, NOT sending value %s to the Radboud Buttonbox' % self.var.radboudbox_value)
+            self.experiment.radboudbox.sendMarker(val=self.radboudbox_value)
+            self.experiment.var.trigger_code = self.radboudbox_value
+            debug.msg(u'Sending value %s to the Radboud Buttonbox' % self.radboudbox_value)
+        elif self.experiment.radboudbox_dummy == u'yes':
+            debug.msg(u'Dummy mode enabled, NOT sending value %s to the Radboud Buttonbox' % self.radboudbox_value)
         else:
            debug.msg(u'Error with dummy mode')
-
-    def close(self):
-
-        """
-        desc:
-            Neatly close the connection to the buttonbox.
-        """
-
-        if not hasattr(self.experiment, "radboudbox") or \
-            self.experiment.radboudbox is None:
-                debug.msg("no active Buttonbox")
-                return
-        try:
-            self.experiment.radboudbox.close()
-            self.experiment.radboudbox = None
-            debug.msg("buttonbox closed")
-        except:
-            debug.msg("failed to close buttonbox")
 
 
 class qtradboudbox_send_trigger(radboudbox_send_trigger, qtautoplugin):

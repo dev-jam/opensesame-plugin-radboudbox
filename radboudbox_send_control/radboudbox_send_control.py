@@ -31,6 +31,28 @@ from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
 
 
+CMD_DICT = {u'Calibrate Sound': [u'C',u'S'],
+			u'Calibrate Voice': [u'C',u'V'],
+			u'Detect Sound': [u'D',u'S'],
+			u'Detect Voice': [u'D',u'V'],
+			u'Marker Out': u'M',
+			u'Pulse Out': u'P',
+			u'Pulse Time': u'X',
+			u'Analog Out 1': u'Y',
+			u'Analog Out 2': u'Z',
+			u'Tone': u'T',
+			u'Analog In 1': [u'A',u'1'],
+			u'Analog In 2': [u'A',u'2'],
+			u'Analog In 3': [u'A',u'3'],
+			u'Analog In 4': [u'A',u'4'],
+			u'LEDs Off': [u'L',u'X'],
+			u'LEDs Input': [u'L',u'I'],
+			u'LEDs Output': [u'L',u'O']
+                    }
+
+PAUSE_LIST = [u'Calibrate Sound', u'Calibrate Voice']
+
+
 class radboudbox_send_control(item):
 
     """
@@ -47,7 +69,6 @@ class radboudbox_send_control(item):
 
         # Set default experimental variables and values
 
-
         # Debugging output is only visible when OpenSesame is started with the
         # --debug argument.
         debug.msg(u'Radboud Buttonbox plug-in has been initialized!')
@@ -56,46 +77,18 @@ class radboudbox_send_control(item):
 
         """Preparation phase"""
 
-        self.radboudbox_command = self.var.radboudbox_command
-
         # Call the parent constructor.
         item.prepare(self)
 
-        try:
-            from rusocsci import buttonbox
-            print(buttonbox.__file__ )
-        except ImportError:
-            debug.msg(u'The RuSocSci package could not be loaded. Check if the file is present and if the file permissions are correct.')
+        if not hasattr(self.experiment, "radboudbox_dummy"):
+            raise osexception(
+                u'You should have one instance of `pygaze_init` at the start of your experiment')
 
-        if not hasattr(self.experiment, "radboudbox"):
-            try:
-                self.experiment.radboudbox = buttonbox.Buttonbox()
-            except OSError:
-                debug.msg(u'Could not access the Radboud Buttonbox')
+        self.radboudbox_command = self.var.radboudbox_command
 
 
-        cmd_dict = {u'Calibrate Sound': [u'C',u'S'],
-                    u'Calibrate Voice': [u'C',u'V'],
-                    u'Detect Sound': [u'D',u'S'],
-                    u'Detect Voice': [u'D',u'V'],
-                    u'Marker Out': u'M',
-                    u'Pulse Out': u'P',
-                    u'Pulse Time': u'X',
-                    u'Analog Out 1': u'Y',
-                    u'Analog Out 2': u'Z',
-                    u'Tone': u'T',
-                    u'Analog In 1': [u'A',u'1'],
-                    u'Analog In 2': [u'A',u'2'],
-                    u'Analog In 3': [u'A',u'3'],
-                    u'Analog In 4': [u'A',u'4'],
-                    u'LEDs Off': [u'L',u'X'],
-                    u'LEDs Input': [u'L',u'I'],
-                    u'LEDs Output': [u'L',u'O']
-                    }
-
-
-        self.cmd = cmd_dict[self.radboudbox_command]
-        if not isinstance(self.cmd, list):        
+        self.cmd = CMD_DICT[self.radboudbox_command]
+        if not isinstance(self.cmd, list):
             self.cmd = list(self.cmd)
             self.cmd.append(self.radboudbox_command_value)
 
@@ -106,28 +99,13 @@ class radboudbox_send_control(item):
         # self.set_item_onset() sets the time_[item name] variable. Optionally,
         # you can pass a timestamp, such as returned by canvas.show().
 
-        self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[0])))
-        self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[1])))
-        #debug.msg(u'Sending value %s%s to the Radboud Buttonbox' % self.cmd[0], self.cmd[1])
+        if self.experiment.radboudbox_dummy == u'no':
+            self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[0])))
+            self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[1])))
+            #debug.msg(u'Sending value %s%s to the Radboud Buttonbox' % self.cmd[0], self.cmd[1])
 
-
-    def close(self):
-
-        """
-        desc:
-            Neatly close the connection to the buttonbox.
-        """
-
-        if not hasattr(self.experiment, "radboudbox") or \
-            self.experiment.radboudbox is None:
-                debug.msg("no active radboudbox")
-                return
-        try:
-            self.experiment.radboudbox.close()
-            self.experiment.radboudbox = None
-            debug.msg("radboudbox closed")
-        except:
-            debug.msg("failed to close radboudbox")
+            if self.radboudbox_command in PAUSE_LIST:
+                self.clock.sleep(2000)
 
 
 class qtradboudbox_send_control(radboudbox_send_control, qtautoplugin):

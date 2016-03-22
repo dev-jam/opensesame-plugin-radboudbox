@@ -61,28 +61,36 @@ class radboudbox_init(item):
         # Call the parent constructor.
         item.prepare(self)
 
-        self.radboudbox_dummy = self.var.radboudbox_dummy        
+        self.experiment.radboudbox_dummy = self.var.radboudbox_dummy
         self.id = self.var.id
-        self.port = self.var.port  
+        self.port = self.var.port
         if self.id == u'autodetect':
             self.id = 0
         if self.port == u'autodetect':
             self.port = None
-        if self.radboudbox_dummy == u'no':
+        if hasattr(self.experiment, "radboudbox"):
+            try:
+                self.experiment.radboudbox.close()
+                self.experiment.radboudbox = None
+                debug.msg("radboudbox closed")
+            except:
+                debug.msg("failed to close radboudbox")
+
+        if self.experiment.radboudbox_dummy == u'no':
             try:
                 from rusocsci import buttonbox
                 print(buttonbox.__file__ )
             except ImportError:
                 debug.msg(u'The RuSocSci package could not be loaded. Check if the file is present and if the file permissions are correct.')
 
-            if not hasattr(self.experiment, "radboudbox"):
-                            
-                
-                try:
-                    self.experiment.radboudbox = buttonbox.Buttonbox(id=self.id, port=self.port)
-                except OSError:
+            try:
+                self.experiment.radboudbox = buttonbox.Buttonbox(id=self.id, port=self.port)
+                self.clock.sleep(2000)
+                self.experiment.cleanup_functions.append(self.close)
+                self.python_workspace[u'radboudbox'] = self.experiment.radboudbox
+            except OSError:
                     debug.msg(u'Could not access the Radboud Buttonbox')
-        elif self.radboudbox_dummy == u'yes':
+        elif self.experiment.radboudbox_dummy == u'yes':
             debug.msg(u'Dummy mode enabled, prepare phase')
         else:
             debug.msg(u'Error with dummy mode, dummy mode: %s' % self.var.radboudbox_dummy)

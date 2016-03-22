@@ -18,13 +18,15 @@ along with OpenSesame.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from libopensesame.exceptions import osexception
-from libopensesame import item, generic_response, debug
+from libopensesame import debug
 from libqtopensesame.items.qtautoplugin import qtautoplugin
 import openexp.keyboard
-from rusocsci import buttonbox
 from libopensesame.py3compat import *
+from libopensesame.item import item
+from libopensesame.generic_response import generic_response
 
-class radboudbox_get_buttons(item.item, generic_response.generic_response):
+
+class radboudbox_get_buttons(item, generic_response):
 
     """
     desc:
@@ -40,8 +42,6 @@ class radboudbox_get_buttons(item.item, generic_response.generic_response):
 
         self.var.timeout = u'infinite'
         self.var.lights = u''
-        self.var.dev = u'autodetect'
-        self.var._dummy = u'no'
         self.var.require_state_change = u'no'
         self.process_feedback = True
 
@@ -52,13 +52,15 @@ class radboudbox_get_buttons(item.item, generic_response.generic_response):
             Prepare the item.
         """
 
-        self.timeout = self.var.timeout 
+        if not hasattr(self.experiment, "radboudbox_dummy"):
+            raise osexception(
+                u'You should have one instance of `pygaze_init` at the start of your experiment')
+
+        self.timeout = self.var.timeout
         self.lights = self.var.lights
-        self.dev = self.var.dev
-        self._dummy =self.var._dummy
         self.require_state_change = self.var.require_state_change
 
-        item.item.prepare(self)
+        item.prepare(self)
         self.prepare_timeout()
         self._require_state_change = self.require_state_change == u'yes'
         # Prepare the allowed responses
@@ -83,33 +85,25 @@ class radboudbox_get_buttons(item.item, generic_response.generic_response):
         debug.msg(u"allowed responses set to %s" % self._allowed_responses)
         # Prepare keyboard for dummy-mode and flushing
         self._keyboard = openexp.keyboard.keyboard(self.experiment)
-        if self._dummy == u'yes':
+        if self.experiment.radboudbox_dummy == u'yes':
             self._resp_func = self._keyboard.get_key
             return
         else:
             if self.timeout == u'infinite' or self.timeout == None:
-                self._timeout = float("inf") 
+                self._timeout = float("inf")
             else:
                 self._timeout = self.timeout
-                
-        # Prepare the device string
-        dev = self.dev
-        if dev == u"autodetect":
-            dev = None
-        # Dynamically create an srbox instance
-        if not hasattr(self.experiment, "radboudbox"):
-            self.experiment.radboudbox = buttonbox.Buttonbox()
-            self.experiment.cleanup_functions.append(self.close)
-            self.python_workspace[u'radboudbox'] = self.experiment.radboudbox
-        # Prepare the light byte
-        s = "010" # Control string
-        for i in range(5):
-            if str(5 - i) in str(self.lights):
-                s += "1"
-            else:
-                s += "0"
-        self._lights = chr(int(s, 2))
-        debug.msg(u"lights string set to %s (%s)" % (s, self.lights))
+
+
+#        # Prepare the light byte
+#        s = "010" # Control string
+#        for i in range(5):
+#            if str(5 - i) in str(self.lights):
+#                s += "1"
+#            else:
+#                s += "0"
+#        self._lights = chr(int(s, 2))
+#        debug.msg(u"lights string set to %s (%s)" % (s, self.lights))
         # Prepare auto response
         if self.experiment.auto_response:
             self._resp_func = self.auto_responder
@@ -126,7 +120,7 @@ class radboudbox_get_buttons(item.item, generic_response.generic_response):
         self.set_item_onset()
         self._keyboard.flush()
         self.set_sri(reset=True)
-        if self._dummy == 'yes':
+        if self.experiment.radboudbox_dummy == 'yes':
             # In dummy mode, we simply take the numeric keys from the keyboard
             if self._allowed_responses is None:
                 self._allowed_responses = list(range(0,10))
@@ -143,7 +137,7 @@ class radboudbox_get_buttons(item.item, generic_response.generic_response):
                     self._resp_func(maxWait=self._timeout,
                         buttonList=self._allowed_responses,
                         timeStamped=True)
-                print(t)        
+                print(t)
                 #[(resp, self.experiment.end_response_interval)] = self._resp_func(buttonList=self._allowed_responses)
                 #self.experiment.srbox.stop()
                 self.experiment.end_response_interval   = time.time()
@@ -157,25 +151,7 @@ class radboudbox_get_buttons(item.item, generic_response.generic_response):
         self.experiment.var.response = resp
         self.experiment.var.latency = self.experiment.end_response_interval
         print(self.experiment.end_response_interval)
-        generic_response.generic_response.response_bookkeeping(self)
-
-    def close(self):
-
-        """
-        desc:
-            Neatly close the connection to the srbox.
-        """
-
-        if not hasattr(self.experiment, "radboudbox") or \
-            self.experiment.radboudbox is None:
-                debug.msg("no active radboudbox")
-                return
-        try:
-            self.experiment.radboudbox.close()
-            self.experiment.radboudbox = None
-            debug.msg("radboudbox closed")
-        except:
-            debug.msg("failed to close radboudbox")
+        generic_response.response_bookkeeping(self)
 
     def var_info(self):
 
@@ -184,8 +160,8 @@ class radboudbox_get_buttons(item.item, generic_response.generic_response):
             A list of (name, description) tuples with variable descriptions.
         """
 
-        return item.item.var_info(self) + \
-            generic_response.generic_response.var_info(self)
+        return item.var_info(self) + \
+            generic_response.var_info(self)
 
 
 class qtradboudbox_get_buttons(radboudbox_get_buttons, qtautoplugin):

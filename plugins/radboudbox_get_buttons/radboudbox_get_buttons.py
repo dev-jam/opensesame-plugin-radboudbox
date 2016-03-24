@@ -126,8 +126,6 @@ class radboudbox_get_buttons(item, generic_response):
                 self._allowed_responses = list(range(0,10))
             resp, self.experiment.end_response_interval = self._resp_func(
                 keylist=self._allowed_responses, timeout=self._timeout)
-            if resp is not None:
-                resp = int(resp)
         else:
             # Get the response
             try:
@@ -140,7 +138,8 @@ class radboudbox_get_buttons(item, generic_response):
                 print(t)
                 #[(resp, self.experiment.end_response_interval)] = self._resp_func(buttonList=self._allowed_responses)
                 #self.experiment.srbox.stop()
-                self.experiment.end_response_interval   = time.time()
+                self.experiment.end_response_interval   = self.clock.time()
+                self.experiment.var.button_detect_time  = self.clock.time()
                 print(self.experiment.end_response_interval)
             except Exception as e:
                 raise osexception(
@@ -150,7 +149,6 @@ class radboudbox_get_buttons(item, generic_response):
         debug.msg("received %s" % resp)
         self.experiment.var.response = resp
         self.experiment.var.latency = self.experiment.end_response_interval
-        print(self.experiment.end_response_interval)
         generic_response.response_bookkeeping(self)
 
     def var_info(self):

@@ -105,6 +105,7 @@ class radboudbox_send_control(item):
             #debug.msg(u'Sending value %s%s to the Radboud Buttonbox' % self.cmd[0], self.cmd[1])
 
             if self.radboudbox_command in PAUSE_LIST:
+                print(u'calibrate pause')                
                 self.clock.sleep(2000)
 
 

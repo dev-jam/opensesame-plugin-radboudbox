@@ -84,20 +84,20 @@ class radboudbox_send_control(item):
             raise osexception(
                 u'You should have one instance of `pygaze_init` at the start of your experiment')
 
-        self.radboudbox_command = self.var.radboudbox_command
-
-
-        self.cmd = CMD_DICT[self.radboudbox_command]
-        if not isinstance(self.cmd, list):
-            self.cmd = list(self.cmd)
-            self.cmd.append(self.radboudbox_command_value)
-
     def run(self):
 
         """Run phase"""
 
         # self.set_item_onset() sets the time_[item name] variable. Optionally,
         # you can pass a timestamp, such as returned by canvas.show().
+
+        self.radboudbox_command = self.var.radboudbox_command
+
+        self.cmd = CMD_DICT[self.radboudbox_command]
+        if not isinstance(self.cmd, list):
+            self.cmd = list(self.cmd)
+            self.cmd.append(self.radboudbox_command_value)
+
 
         if self.experiment.radboudbox_dummy == u'no':
             self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[0])))

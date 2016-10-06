@@ -41,9 +41,9 @@ class radboudbox_get_buttons(item, generic_response):
         """
 
         self.var.timeout = u'infinite'
-        self.var.lights = u''
-        self.var.require_state_change = u'no'
-        self.process_feedback = True
+        #self.var.lights = u''
+        #self.var.require_state_change = u'no'
+        #self.process_feedback = True
 
     def prepare(self):
 
@@ -57,32 +57,23 @@ class radboudbox_get_buttons(item, generic_response):
                 u'You should have one instance of `pygaze_init` at the start of your experiment')
 
         self.timeout = self.var.timeout
-        self.lights = self.var.lights
-        self.require_state_change = self.var.require_state_change
 
         item.prepare(self)
         self.prepare_timeout()
-        self._require_state_change = self.require_state_change == u'yes'
+        self._require_state_change = False
+ 
         # Prepare the allowed responses
         self._allowed_responses = None
         if u'allowed_responses' in self.var:
             self._allowed_responses = []
             for r in safe_decode(self.var.allowed_responses).split(u';'):
                 if r.strip() != u'':
-#                    try:
-#                        r = int(r)
-#                    except:
-#                        raise osexception(
-#                            u"'%s' is not a valid response in radboudbox '%s'. Expecting a number in the range 0 .. 5." \
-#                            % (r, self.name))
-#                    if r < 0 or r > 255:
-#                        raise osexception(
-#                            u"'%s' is not a valid response in radboudbox '%s'. Expecting a number in the range 0 .. 5." \
-#                            % (r, self.name))
                     self._allowed_responses.append(r)
             if not self._allowed_responses:
                 self._allowed_responses = None
         debug.msg(u"allowed responses set to %s" % self._allowed_responses)
+        print(u"allowed responses set to %s" % self._allowed_responses)
+
         # Prepare keyboard for dummy-mode and flushing
         self._keyboard = openexp.keyboard.keyboard(self.experiment)
         if self.experiment.radboudbox_dummy == u'yes':
@@ -94,16 +85,6 @@ class radboudbox_get_buttons(item, generic_response):
             else:
                 self._timeout = self.timeout
 
-
-#        # Prepare the light byte
-#        s = "010" # Control string
-#        for i in range(5):
-#            if str(5 - i) in str(self.lights):
-#                s += "1"
-#            else:
-#                s += "0"
-#        self._lights = chr(int(s, 2))
-#        debug.msg(u"lights string set to %s (%s)" % (s, self.lights))
         # Prepare auto response
         if self.experiment.auto_response:
             self._resp_func = self.auto_responder
@@ -129,26 +110,18 @@ class radboudbox_get_buttons(item, generic_response):
         else:
             # Get the response
             try:
-                #self.experiment.radboudbox.setLeds(self._lights)
-                self.experiment.radboudbox.clearEvents()
-                [(resp,t)] = \
-                    self._resp_func(maxWait=self._timeout,
-                        buttonList=self._allowed_responses,
-                        timeStamped=True)
-                print(t)
-                #[(resp, self.experiment.end_response_interval)] = self._resp_func(buttonList=self._allowed_responses)
-                #self.experiment.srbox.stop()
+                #self.experiment.radboudbox.clearEvents()
+                [resp] = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
                 self.experiment.end_response_interval   = self.clock.time()
-                self.experiment.var.button_detect_time  = self.clock.time()
-                print(self.experiment.end_response_interval)
+                self.experiment.var.button_detect_time  = self.experiment.end_response_interval
             except Exception as e:
                 raise osexception(
                     "An error occured in radboudbox '%s': %s." % (self.name, e))
             if isinstance(resp, list):
                 resp = resp[0]
+        print("Detected press on button: '%s'" % resp)
         debug.msg("received %s" % resp)
         self.experiment.var.response = resp
-        self.experiment.var.latency = self.experiment.end_response_interval
         generic_response.response_bookkeeping(self)
 
     def var_info(self):

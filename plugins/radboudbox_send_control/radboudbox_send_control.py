@@ -29,7 +29,7 @@ from libopensesame.py3compat import *
 from libopensesame import debug
 from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
-
+import time
 
 CMD_DICT = {u'Calibrate Sound': [u'C',u'S'],
 			u'Calibrate Voice': [u'C',u'V'],
@@ -51,6 +51,8 @@ CMD_DICT = {u'Calibrate Sound': [u'C',u'S'],
                     }
 
 PAUSE_LIST = [u'Calibrate Sound', u'Calibrate Voice']
+
+FLUSH_LIST = [u'Detect Sound', u'Detect Voice']
 
 
 class radboudbox_send_control(item):
@@ -100,13 +102,22 @@ class radboudbox_send_control(item):
 
 
         if self.experiment.radboudbox_dummy == u'no':
+            if self.radboudbox_command in FLUSH_LIST:
+                print(u'Flushing events')                
+                self.experiment.radboudbox.clearEvents()
+
             self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[0])))
             self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[1])))
-            #debug.msg(u'Sending value %s%s to the Radboud Buttonbox' % self.cmd[0], self.cmd[1])
+            print(self.radboudbox_command)
+            #debug.msg(u'Sending value %s to the Radboud Buttonbox' % self.cmd[0])
+            #debug.msg(u'Sending value %s to the Radboud Buttonbox' % self.cmd[1])
+            #print(self.cmd[0])
+            #print(self.cmd[1])
 
             if self.radboudbox_command in PAUSE_LIST:
-                print(u'calibrate pause')                
-                self.clock.sleep(2000)
+                print(u'Calibration pause')                
+                time.sleep(1)
+                #self.clock.sleep(1000)
 
 
 class qtradboudbox_send_control(radboudbox_send_control, qtautoplugin):

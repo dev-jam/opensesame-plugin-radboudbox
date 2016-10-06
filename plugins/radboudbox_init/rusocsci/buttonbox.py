@@ -7,7 +7,7 @@ Copyright (C) 2013-2014 Wilbert van Ham, Radboud University Nijmegen
 Distributed under the terms of the GNU General Public License (GPL) version 3 or newer.
 """
 import sys, serial, time, os, re, logging, glob
-import utils
+from . import utils
 
 # our buttonbox has id 0403:6001 fro  its UART IC
 # todo: add support for 2341:0001 (Arduino Uno)
@@ -49,10 +49,10 @@ class Buttonbox(object):
 		self._device = None
 		if not self._port:
 			raise Exception("No USB serial device connected, could not get port name.")
-		[self._device, idString] = utils.open(self._port)
+		self._device, idString = utils.open(self._port)
 		if not self._device:
 			logging.critical("No BITSI buttonbox connected, could not connect to port {}".format(self._port))
-		elif idString == "BITSI mode, Ready!" or idString == "BITSI event mode, Ready!":
+		elif idString.startswith("BITSI mode, Ready!") or idString.startswith("BITSI event mode, Ready!"):
 			logging.debug("Device is a BITSI buttonbox ({}): {}".format(len(idString), idString))
 		else:
 			logging.error("Device is NOT a BITSI buttonbox ({}): {}".format(len(idString), idString))
@@ -82,11 +82,6 @@ class Buttonbox(object):
 				Only keypresses from this set of keys will be removed from the keyboard buffer.
 				If the keyList is None all keys will be checked and the key buffer will be cleared
 				completely. NB, pygame doesn't return timestamps (they are always 0)
-			timeStamped : **False** or True or `Clock`
-				If True will return a list of
-				tuples instead of a list of keynames. Each tuple has (keyname, time).
-				If a `core.Clock` is given then the time will be relative to the `Clock`'s last reset
-				there is no timestamp in our buttonbox. Use buttonbox.waitkeys if you want timestamps.
 		"""
 		if self._device == None:
 			raise Exception("No buttonbox connected")
@@ -148,10 +143,10 @@ class Buttonbox(object):
 			# version 0.7 addition to comply with PsychoPy
 			return None
 		if hasattr(timeStamped, 'timeAtLastReset'):
-			return [(c, time.time())]
+			return [(c, time.time() - timeStamped.timeAtLastReset)]
 		elif timeStamped:
 			# return as a one item list to mimic getButtons behaviour
-			return [(c, time.time())]
+			return [(c, time.time() - t)]
 		else:
 			return [c] # version 0.7 change to comply with PsychoPy
 			

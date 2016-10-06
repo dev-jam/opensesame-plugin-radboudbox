@@ -6,11 +6,11 @@ Copyright (C) 2013,2014 Wilbert van Ham, Radboud University Nijmegen
 Distributed under the terms of the GNU General Public License (GPL) version 3 or newer.
 """
 import sys, serial, time, os, re, logging, glob
-import utils, buttonbox
+from . import utils, buttonbox
 
 class Extended(buttonbox.Buttonbox):
 	def __init__(self, id=0, port=None):
-		[self._device, idString] = utils.open(utils.getPort(id, port))
+		self._device, idString = utils.open(utils.getPort(id, port))
 		idStringCorrect = "BITSI_extend mode, Ready!"
 		if not self._device:
 			logging.error("No BITSI extended buttonbox connected.")

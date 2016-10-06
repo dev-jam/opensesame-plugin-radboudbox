@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """RuSocSci module for utilities, like listing USB to serial devices and connecting to them.
 
-# Copyright (C) 2013 Wilbert van Ham, Radboud University Nijmegen
+# Copyright (C) 2013-2015 Wilbert van Ham, Radboud University Nijmegen
 # Distributed under the terms of the GNU General Public License (GPL) version 3 or newer.
 
 Known issues:
@@ -215,10 +215,11 @@ def open(port):
 	# collect byes up to "!\x0d\x0a" that identify the type of device
 	beginTime = time.time()
 	bytesRead = ""
-	while len(bytesRead) < 3 or bytesRead[-3:] != "!\x0d\x0a":
+	# read till windows newline for a maximum of 3 seconds
+	while len(bytesRead) < 2 or bytesRead[-2:] != "\x0d\x0a":
 		if time.time() > beginTime + 3:
 			logging.info("USB serial timeout waiting for ID string")
-			return [device, "USB serial timeout"]
+			return (device, "USB serial timeout")
 		bytes = device.read()
 		#if len(bytes) > 0:
 			#print("bytes: #{}#".format(bytes))
@@ -226,6 +227,6 @@ def open(port):
 			#print("bytesRead: #{}#".format(bytesRead[-3:]))
 		bytesRead += bytes
 		
-	return [device, bytesRead[:-2]]
+	return (device, bytesRead[:-2])
 
 

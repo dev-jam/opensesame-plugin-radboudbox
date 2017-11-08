@@ -6,8 +6,8 @@ OpenSesame Plug-in: Radboud Buttonbox plugin
 Copyright, 2017, Bob Rosbag  
 
 This plugin makes use of the RuSocSci python package developed by Wilbert van der Ham. Radboud Buttonbox is developed by Pascal de Water. Exact references will follow in the future. 
-
-
+  
+  
 ## 1. About
 --------
 
@@ -27,8 +27,8 @@ This plug-in has five items:
 
 
 Linux, and Windows are supported (possible also OSX, not tested). The plug-in will first look for the globally installed rusocsci package. If this is not available, the shipped version will be used. Install options are listed below.
-
-
+  
+  
 ## 2. LICENSE
 ----------
 
@@ -39,8 +39,8 @@ The full license should be included in the file COPYING, or can be obtained from
 
 This plug-in contains works of others. For the full license information, please
 refer to `debian/copyright`.
-
-
+  
+  
 ## 3. Documentation
 ----------------
 

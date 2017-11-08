@@ -7,7 +7,7 @@ Copyright, 2017, Bob Rosbag
 
 This plugin makes use of the RuSocSci python package developed by Wilbert van der Ham. Radboud Buttonbox is developed by Pascal de Water. Exact references will follow in the future. 
 
-1. About
+## 1. About
 --------
 
 The 'Init' item initializes the buttonbox and has to be placed somewhere in the beginning of the experiment (before all the other radboudbox items).
@@ -23,7 +23,7 @@ For more information:
 
 
 
-2. LICENSE
+## 2. LICENSE
 ----------
 
 The Radboud Buttonbox plug-in is distributed under the terms of the GNU General Public License 3.
@@ -35,7 +35,7 @@ This plug-in contains works of others. For the full license information, please
 refer to `debian/copyright`.
 
 
-3. Documentation
+## 3. Documentation
 ----------------
 
 Installation instructions and documentation on OpenSesame are available on the documentation website:

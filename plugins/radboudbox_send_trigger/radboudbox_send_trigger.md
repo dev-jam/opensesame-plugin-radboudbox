@@ -7,7 +7,7 @@ Copyright, 2016, Bob Rosbag
 
 This plugin makes use of the RuSocSci python package developed by Wilbert van der Ham. Radboud Buttonbox is developed by Pascal de Water. Exact references will follow in the future. 
 
-1. About
+## 1. About
 --------
 
 In EEG/ERP studies it is common to send triggers to mark timestamp for significant events (e.g., the onset of a trial, presentation of a particular stimulus, etc.). Triggers are typically bytes that are sent via the parallel port to data acquisition systems.
@@ -22,7 +22,7 @@ For more information:
 <http://tsgdoc.socsci.ru.nl/index.php?title=ButtonBoxes>
 
 
-2. LICENSE
+## 2. LICENSE
 ----------
 
 The Radboud Buttonbox 'Send Trigger' plug-in is distributed under the terms of the GNU General Public License 3.
@@ -34,7 +34,7 @@ This plug-in contains works of others. For the full license information, please
 refer to `debian/copyright`.
 
 
-3. Documentation
+## 3. Documentation
 ----------------
 
 Installation instructions and documentation on OpenSesame are available on the documentation website:

@@ -33,7 +33,31 @@ from libopensesame.exceptions import osexception
 
 VERSION = u'2017.11-1'
 
-class radboudbox_send_trigger(item):
+CMD_DICT = {u'Calibrate Sound': [u'C',u'S'],
+            u'Calibrate Voice': [u'C',u'V'],
+            u'Detect Sound': [u'D',u'S'],
+            u'Detect Voice': [u'D',u'V'],
+            u'Marker Out': u'M',
+            u'Pulse Out': u'P',
+            u'Pulse Time': u'X',
+            u'Analog Out 1': u'Y',
+            u'Analog Out 2': u'Z',
+            u'Tone': u'T',
+            u'Analog In 1': [u'A',u'1'],
+            u'Analog In 2': [u'A',u'2'],
+            u'Analog In 3': [u'A',u'3'],
+            u'Analog In 4': [u'A',u'4'],
+            u'LEDs Off': [u'L',u'X'],
+            u'LEDs Input': [u'L',u'I'],
+            u'LEDs Output': [u'L',u'O']
+                    }
+
+PAUSE_LIST = [u'Calibrate Sound', u'Calibrate Voice']
+
+FLUSH_LIST = [u'Detect Sound', u'Detect Voice']
+
+
+class radboudbox_send_control(item):
 
     """
     This class handles the basic functionality of the item.
@@ -41,7 +65,7 @@ class radboudbox_send_trigger(item):
     """
 
     # Provide an informative description for your plug-in.
-    description = u'Radboud Buttonbox \'Send Trigger\' Plug-in'
+    description = u'Radboud Buttonbox: sends a control command to the buttonbox.'
 
     def __init__(self, name, experiment, string=None):
 
@@ -53,8 +77,7 @@ class radboudbox_send_trigger(item):
 
         """Resets plug-in to initial values."""
 
-        self.var.value = 0
-
+        pass
 
     def init_var(self):
 
@@ -66,6 +89,9 @@ class radboudbox_send_trigger(item):
         else:
             raise osexception(
                     u'You should have one instance of `radboudbox_init` at the start of your experiment')
+
+        self.command = self.var.command
+        self.cmd = CMD_DICT[self.command]
 
 
     def prepare(self):
@@ -82,17 +108,24 @@ class radboudbox_send_trigger(item):
 
         """Run phase"""
 
-        self.value = self.var.value
+        if not isinstance(self.cmd, list):
+            self.cmd = list(self.cmd)
+            self.cmd.append(self.var.command)
 
+        self.set_item_onset()
         if self.dummy_mode == u'no':
-            ## turn trigger on
-            #self.experiment.radboudbox.clearEvents()
-            self.experiment.radboudbox.sendMarker(val=self.value)
-            debug.msg(u'Sending value %s to the Radboud Buttonbox' % self.value)
-        elif self.dummy_mode == u'yes':
-            debug.msg(u'Dummy mode enabled, NOT sending value %s to the Radboud Buttonbox' % self.value)
-        else:
-           debug.msg(u'Error with dummy mode')
+            if self.command in FLUSH_LIST:
+                self.show_message(u'Flushing events')
+                self.experiment.radboudbox.clearEvents()
+
+            self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[0])))
+            self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[1])))
+            self.show_message(''.join(self.cmd))
+
+            if self.command in PAUSE_LIST:
+                self.show_message(u'Calibration pause')
+                self.clock.sleep(1)
+                #self.clock.sleep(1000)
 
 
     def show_message(self, message):
@@ -106,13 +139,13 @@ class radboudbox_send_trigger(item):
             print(message)
 
 
-class qtradboudbox_send_trigger(radboudbox_send_trigger, qtautoplugin):
+class qtradboudbox_send_control(radboudbox_send_control, qtautoplugin):
 
     def __init__(self, name, experiment, script=None):
 
         """Plug-in GUI"""
 
-        radboudbox_send_trigger.__init__(self, name, experiment, script)
+        radboudbox_send_control.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)
         self.text_version.setText(
         u'<small>Parallel Port Trigger version %s</small>' % VERSION)

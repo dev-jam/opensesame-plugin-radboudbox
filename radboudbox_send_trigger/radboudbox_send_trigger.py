@@ -1,6 +1,10 @@
 #-*- coding:utf-8 -*-
 
 """
+21-01-2016
+Author: Bob Rosbag
+Version: 1.0
+
 This file is part of OpenSesame.
 
 OpenSesame is free software: you can redistribute it and/or modify
@@ -17,34 +21,39 @@ You should have received a copy of the GNU General Public License
 along with OpenSesame.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from libopensesame.exceptions import osexception
-from libopensesame import debug
-from libqtopensesame.items.qtautoplugin import qtautoplugin
-from openexp.keyboard import keyboard
+#import warnings
+#import os
+#import imp
+
 from libopensesame.py3compat import *
+from libopensesame import debug
 from libopensesame.item import item
-from libopensesame.generic_response import generic_response
-import time
+from libqtopensesame.items.qtautoplugin import qtautoplugin
+from libopensesame.exceptions import osexception
 
 VERSION = u'2017.11-1'
 
-class radboudbox_get_buttons_wait(item, generic_response):
+class radboudbox_send_trigger(item):
 
     """
-    desc:
-        A plug-in for using the serial response box.
+    This class handles the basic functionality of the item.
+    It does not deal with GUI stuff.
     """
+
+    # Provide an informative description for your plug-in.
+    description = u'Radboud Buttonbox: sends a trigger.'
 
     def __init__(self, name, experiment, string=None):
 
         item.__init__(self, name, experiment, string)
         self.verbose = u'no'
-        self.poll_time = 0.1
+
 
     def reset(self):
 
         """Resets plug-in to initial values."""
-        pass
+
+        self.var.value = 0
 
 
     def init_var(self):
@@ -58,22 +67,14 @@ class radboudbox_get_buttons_wait(item, generic_response):
             raise osexception(
                     u'You should have one instance of `radboudbox_init` at the start of your experiment')
 
-        self.experiment.radboudbox_get_buttons_wait = 1
-
 
     def prepare(self):
 
-        """
-        desc:
-            Prepare the item.
-        """
+        """Preparation phase"""
 
+        # Call the parent constructor.
         item.prepare(self)
-        self.prepare_timeout()
-        
-        # create keyboard object
-        #self.kb = keyboard(self.experiment,timeout=1)
-        
+
         self.init_var()
 
 
@@ -81,29 +82,17 @@ class radboudbox_get_buttons_wait(item, generic_response):
 
         """Run phase"""
 
-        if not hasattr(self.experiment, "radboudbox_get_buttons_start"):
-            raise osexception(
-                    u'Radboudbox Get Buttons Start item is missing')
-
-        self.set_item_onset()
+        self.value = self.var.value
 
         if self.dummy_mode == u'no':
-            
-            ## wait if thread has not started yet
-            while not self.experiment.radboudbox_get_buttons_thread_running:
-                time.sleep(self.poll_time)
-
-            ## join thread if thread is still running
-            if self.experiment.radboudbox_get_buttons_locked:
-                self.experiment.radboudbox_get_buttons_thread.join()
-
-            ## set end of thread
-            self.experiment.radboudbox_get_buttons_thread_running = 0
-
+            ## turn trigger on
+            #self.experiment.radboudbox.clearEvents()
+            self.experiment.radboudbox.sendMarker(val=self.value)
+            debug.msg(u'Sending value %s to the Radboud Buttonbox' % self.value)
         elif self.dummy_mode == u'yes':
-            self.show_message(u'Dummy mode enabled, NOT playing audio')
+            debug.msg(u'Dummy mode enabled, NOT sending value %s to the Radboud Buttonbox' % self.value)
         else:
-            self.show_message(u'Error with dummy mode!')
+           debug.msg(u'Error with dummy mode')
 
 
     def show_message(self, message):
@@ -117,11 +106,13 @@ class radboudbox_get_buttons_wait(item, generic_response):
             print(message)
 
 
-class qtradboudbox_get_buttons_wait(radboudbox_get_buttons_wait, qtautoplugin):
+class qtradboudbox_send_trigger(radboudbox_send_trigger, qtautoplugin):
 
     def __init__(self, name, experiment, script=None):
 
-        radboudbox_get_buttons_wait.__init__(self, name, experiment, script)
+        """Plug-in GUI"""
+
+        radboudbox_send_trigger.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)
         self.text_version.setText(
         u'<small>Parallel Port Trigger version %s</small>' % VERSION)

@@ -1,10 +1,16 @@
-description: Radboud Buttonbox 'get buttons' plug-in.
+description: Radboud Buttonbox - starts button registration on the foreground.
 version: 2017.11-1
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
 date: "2017"
 controls:
+#-
+#    label: Correct response
+#    name: "line_edit_correct_response"
+#    tooltip: Expecting a button number (A .. H or S etc.)
+#    type: line_edit
+#    var: correct_response
 -
     label: Allowed responses
     tooltip: Expecting a semicolon-separated list of button numbers, e.g., 1;3;4
@@ -17,6 +23,10 @@ controls:
     tooltip: Expecting a value in milliseconds or 'infinite'  
     type: line_edit
     var: timeout
+-
+    label: |
+      <b>IMPORTANT:</b> this is a foreground item, it will wait for the button press/release or till the timeout has ended before advancing to the next item.
+    type: "text"
 -
     label: |
       <small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialisation of the buttonbox</small>

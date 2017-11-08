@@ -1,4 +1,4 @@
-OpenSesame Plug-in: Radboud Buttonbox 'Get Buttons Start' plugin
+OpenSesame Plug-in: Radboud Buttonbox 'Send Control' plugin
 ==========
 
 *An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.*  
@@ -10,14 +10,12 @@ This plugin makes use of the RuSocSci python package developed by Wilbert van de
 ## 1. About
 --------
 
-The 'Get Buttons Start' can be used for time accurate(1ms) button press/release, audio detection and voice key.
-Upper case A, B, C, D, E, F are used for key presses, and lower case a, b, c, d, e, f are used for key releases. Uppercase S is used for sound key detection and uppercase V for voice key.  
-
-Note: this item will immediately advance to the next item, it will **NOT** wait for the button press/release or till the timeout has ended
+The 'Init' item initializes the buttonbox and has to be placed somewhere in the beginning of the experiment (before all the other radboudbox items).
 
 This plug-in has two options:
-- *Allowed Resonses* list of buttons separated by ';'
-- *Timeout* time to wait for a button press/release
+
+- *Send Command* select a command
+- *Value* for if the command needs a value
 
 
 For more information:

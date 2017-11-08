@@ -1,10 +1,6 @@
 #-*- coding:utf-8 -*-
 
 """
-21-01-2016
-Author: Bob Rosbag
-Version: 1.0
-
 This file is part of OpenSesame.
 
 OpenSesame is free software: you can redistribute it and/or modify
@@ -21,63 +17,37 @@ You should have received a copy of the GNU General Public License
 along with OpenSesame.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-#import warnings
-#import os
-#import imp
-
-from libopensesame.py3compat import *
-from libopensesame import debug
-from libopensesame.item import item
-from libqtopensesame.items.qtautoplugin import qtautoplugin
 from libopensesame.exceptions import osexception
+from libopensesame import debug
+from libqtopensesame.items.qtautoplugin import qtautoplugin
+from openexp.keyboard import keyboard
+from libopensesame.py3compat import *
+from libopensesame.item import item
+import time
 
 VERSION = u'2017.11-1'
 
-CMD_DICT = {u'Calibrate Sound': [u'C',u'S'],
-			u'Calibrate Voice': [u'C',u'V'],
-			u'Detect Sound': [u'D',u'S'],
-			u'Detect Voice': [u'D',u'V'],
-			u'Marker Out': u'M',
-			u'Pulse Out': u'P',
-			u'Pulse Time': u'X',
-			u'Analog Out 1': u'Y',
-			u'Analog Out 2': u'Z',
-			u'Tone': u'T',
-			u'Analog In 1': [u'A',u'1'],
-			u'Analog In 2': [u'A',u'2'],
-			u'Analog In 3': [u'A',u'3'],
-			u'Analog In 4': [u'A',u'4'],
-			u'LEDs Off': [u'L',u'X'],
-			u'LEDs Input': [u'L',u'I'],
-			u'LEDs Output': [u'L',u'O']
-                    }
+class radboudbox_get_buttons_wait(item):
 
-PAUSE_LIST = [u'Calibrate Sound', u'Calibrate Voice']
-
-FLUSH_LIST = [u'Detect Sound', u'Detect Voice']
-
-
-class radboudbox_send_control(item):
-
-    """
-    This class handles the basic functionality of the item.
+     """
+    Class handles the basic functionality of the item.
     It does not deal with GUI stuff.
     """
 
     # Provide an informative description for your plug-in.
-    description = u'Radboud Buttonbox \'Send Trigger\' Plug-in'
+    description = u'Radboud Buttonbox: waits until the background button registration has finished.'
 
     def __init__(self, name, experiment, string=None):
 
         item.__init__(self, name, experiment, string)
         self.verbose = u'no'
-
+        self.poll_time = 0.1
 
     def reset(self):
 
         """Resets plug-in to initial values."""
-
         pass
+
 
     def init_var(self):
 
@@ -90,16 +60,21 @@ class radboudbox_send_control(item):
             raise osexception(
                     u'You should have one instance of `radboudbox_init` at the start of your experiment')
 
-        self.command = self.var.command
-        self.cmd = CMD_DICT[self.command]
+        self.experiment.radboudbox_get_buttons_wait = 1
 
 
     def prepare(self):
 
-        """Preparation phase"""
+        """
+        desc:
+            Prepare the item.
+        """
 
-        # Call the parent constructor.
         item.prepare(self)
+        self.prepare_timeout()
+
+        # create keyboard object
+        #self.kb = keyboard(self.experiment,timeout=1)
 
         self.init_var()
 
@@ -108,24 +83,29 @@ class radboudbox_send_control(item):
 
         """Run phase"""
 
-        if not isinstance(self.cmd, list):
-            self.cmd = list(self.cmd)
-            self.cmd.append(self.var.command)
+        if not hasattr(self.experiment, "radboudbox_get_buttons_start"):
+            raise osexception(
+                    u'Radboudbox Get Buttons Start item is missing')
 
         self.set_item_onset()
+
         if self.dummy_mode == u'no':
-            if self.command in FLUSH_LIST:
-                self.show_message(u'Flushing events')
-                self.experiment.radboudbox.clearEvents()
 
-            self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[0])))
-            self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[1])))
-            self.show_message(''.join(self.cmd))
+            ## wait if thread has not started yet
+            while not self.experiment.radboudbox_get_buttons_thread_running:
+                time.sleep(self.poll_time)
 
-            if self.command in PAUSE_LIST:
-                self.show_message(u'Calibration pause')
-                self.clock.sleep(1)
-                #self.clock.sleep(1000)
+            ## join thread if thread is still running
+            if self.experiment.radboudbox_get_buttons_locked:
+                self.experiment.radboudbox_get_buttons_thread.join()
+
+            ## set end of thread
+            self.experiment.radboudbox_get_buttons_thread_running = 0
+
+        elif self.dummy_mode == u'yes':
+            self.show_message(u'Dummy mode enabled, NOT playing audio')
+        else:
+            self.show_message(u'Error with dummy mode!')
 
 
     def show_message(self, message):
@@ -139,13 +119,11 @@ class radboudbox_send_control(item):
             print(message)
 
 
-class qtradboudbox_send_control(radboudbox_send_control, qtautoplugin):
+class qtradboudbox_get_buttons_wait(radboudbox_get_buttons_wait, qtautoplugin):
 
     def __init__(self, name, experiment, script=None):
 
-        """Plug-in GUI"""
-
-        radboudbox_send_control.__init__(self, name, experiment, script)
+        radboudbox_get_buttons_wait.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)
         self.text_version.setText(
         u'<small>Parallel Port Trigger version %s</small>' % VERSION)

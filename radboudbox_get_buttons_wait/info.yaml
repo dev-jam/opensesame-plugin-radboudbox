@@ -1,16 +1,10 @@
-description: Radboud Buttonbox 'Send Trigger' plug-in.
+description: Radboud Buttonbox - waits until the background button registration has finished.
 version: 2017.11-1
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
 date: "2017"
 controls:
--
-    label: "Value"
-    name: "line_edit_value"
-    tooltip: "Value to set port"
-    type: "line_edit"
-    var: "value"
 -
     label: |
       <small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialisation of the buttonbox</small>

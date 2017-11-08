@@ -18,7 +18,19 @@ For more information:
 
 <http://tsgdoc.socsci.ru.nl/index.php?title=ButtonBoxes>
 
-This plug-in has five items:
+
+This plug-in consist of foreground and background (multithreaded) items.
+
+
+Difference between foreground and background:
+
+- **Foreground** item starts button/signal registration until it detects an allowed button or the set duration has passed. 
+- **Background** item consist of a 'start' and 'wait' item. These are fully multi-threaded. After the start of the button/signal registration, the item will immediately advance to the next item. When the experiment reaches the 'wait' item, it will wait until a button/signal has been detected by the 'start' item or the duration has passed.
+
+
+This plug-in has six items:
+
+- **Init** initialization of the buttonbox, this should be placed at the beginning of an experiment.
 - **Wait Buttons** waits for a button press or release before continuing to the next item in the experiment
 - **Get Buttons Start** starts a new thread which monitors for button presses/releases, it will directly advance to the next item in the experiment
 - **Get buttons Wait** waits until the thread from 'Get Buttons Start' is finished (has detected a button press/release) before advancing to the next item in the experiment 

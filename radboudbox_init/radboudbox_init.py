@@ -41,7 +41,7 @@ class radboudbox_init(item):
     """
 
     # Provide an informative description for your plug-in.
-    description = u'Radboud Buttonbox \'Send Trigger\' Plug-in'
+    description = u'Radboud Buttonbox - initializes the buttonbox.'
 
     def __init__(self, name, experiment, string=None):
 

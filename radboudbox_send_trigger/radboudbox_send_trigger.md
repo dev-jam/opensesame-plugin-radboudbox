@@ -14,6 +14,7 @@ In EEG/ERP studies it is common to send triggers to mark timestamp for significa
 The Technical Support Group (Radboud University, Social Sciences) developed an USB Arduino based Buttonbox which can send low latency parallel port like triggers without the use of an actual parallel port.  
 
 This plug-in has three options:
+
 - *Value* is a positive integer between 1-255 and specifies the trigger byte
 
 

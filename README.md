@@ -1,37 +1,43 @@
-OpenSesame Plug-in: Radboud Buttonbox plugin (Beta)
+OpenSesame Plug-in: Radboud Buttonbox plugin
 ==========
 
-*An OpenSesame Plug-in for sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.*  
+*An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.*  
 
-Copyright, 2016, Bob Rosbag  
+Copyright, 2017, Bob Rosbag  
 
 This plugin makes use of the RuSocSci python package developed by Wilbert van der Ham. Radboud Buttonbox is developed by Pascal de Water. Exact references will follow in the future. 
 
 1. About
 --------
 
-In EEG/ERP studies it is common to send triggers to mark timestamp for significant events (e.g., the onset of a trial, presentation of a particular stimulus, etc.). Triggers are typically bytes that are sent via the parallel port to data acquisition systems.
-The Technical Support Group (Radboud University, Social Sciences) developed an USB Arduino based Buttonbox which can send low latency parallel port like triggers without the use of an actual parallel port.  
+The Technical Support Group (Radboud University, Social Sciences) developed an USB Arduino based Buttonbox which can be used for time accurate(1ms) button press, voice key, sound key registration and sending parallel port like triggers.
+Upper case A, B, C, D, E, F are used for key presses, and lower case a, b, c, d, e, f are used for key releases. Uppercase S is used for sound key detection and uppercase V for voice key.  
 
-This plug-in has three options:
-- *Value* is a positive integer between 1-255 and specifies the trigger byte
-- *Dummy mode* for testing experiments
+For more information:
 
-Linux, and Windows are supported (possible also OSX, not tested). The plug-in will first look for the globally installed rusocsci package. If this is not available, a shipped version will be used. Install options are listed below.
+<http://tsgdoc.socsci.ru.nl/index.php?title=ButtonBoxes>
+
+This plug-in has five items:
+- **Wait Buttons** waits for a button press or release before continuing to the next item in the experiment
+- **Get Buttons Start** starts a new thread which monitors for button presses/releases, it will directly advance to the next item in the experiment
+- **Get buttons Wait** waits until the thread from 'Get Buttons Start' is finished (has detected a button press/release) before advancing to the next item in the experiment 
+- **Send Control** send control code to the buttonbox, for example 'Calibrate Sound', 'Detect Sound'
+- **Send Trigger** for sending triggers to hardware with a parallel port
 
 
-Installation instructions: <http://osdoc.cogsci.nl/devices/triggers/>
+Linux, and Windows are supported (possible also OSX, not tested). The plug-in will first look for the globally installed rusocsci package. If this is not available, the shipped version will be used. Install options are listed below.
+
 
 
 2. LICENSE
 ----------
 
-The Radboud Buttonbox 'Send Trigger' plug-in is distributed under the terms of the GNU General Public License 3.
+The Radboud Buttonbox plug-in is distributed under the terms of the GNU General Public License 3.
 The full license should be included in the file COPYING, or can be obtained from
 
 - <http://www.gnu.org/licenses/gpl.txt>
 
-Radboud Buttonbox 'Send Trigger' plug-in contains works of others. For the full license information, please
+This plug-in contains works of others. For the full license information, please
 refer to `debian/copyright`.
 
 

@@ -1,16 +1,16 @@
 description: Radboud Buttonbox 'send control' plug-in.
-version: 0.2
+version: 2017.11-1
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
-date: "2016"
+date: "2017"
 controls:
 -
     label: "Send Command"
-    name: "combobox_radboudbox_command"
+    name: "combobox_command"
     tooltip: "Send command to the RadboudBox"
     type: "combobox"
-    var: radboudbox_command
+    var: command
     options:
       - Calibrate Sound
       - Calibrate Voice
@@ -34,5 +34,12 @@ controls:
     tooltip: Command Value
     name: line_edit_command_value
     type: line_edit
-    var: radboudbox_command_value
-
+    var: command_value
+-
+    label: |
+      <small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialisation of the buttonbox</small>
+    type: text
+-
+    type: text
+    label: DUMMY
+    name: text_version

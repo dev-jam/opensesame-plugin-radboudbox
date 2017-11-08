@@ -1,37 +1,37 @@
-OpenSesame Plug-in: Radboud Buttonbox 'Send Trigger' plugin (Beta)
+OpenSesame Plug-in: Radboud Buttonbox 'Send Control' plugin
 ==========
 
-*An OpenSesame Plug-in for sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.*  
+*An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.*  
 
-Copyright, 2016, Bob Rosbag  
+Copyright, 2017, Bob Rosbag  
 
 This plugin makes use of the RuSocSci python package developed by Wilbert van der Ham. Radboud Buttonbox is developed by Pascal de Water. Exact references will follow in the future. 
 
 1. About
 --------
 
-In EEG/ERP studies it is common to send triggers to mark timestamp for significant events (e.g., the onset of a trial, presentation of a particular stimulus, etc.). Triggers are typically bytes that are sent via the parallel port to data acquisition systems.
-The Technical Support Group (Radboud University, Social Sciences) developed an USB Arduino based Buttonbox which can send low latency parallel port like triggers without the use of an actual parallel port.  
+The 'Init' item initializes the buttonbox and has to be placed somewhere in the beginning of the experiment (before all the other radboudbox items).
 
-This plug-in has three options:
-- *Value* is a positive integer between 1-255 and specifies the trigger byte
-- *Dummy mode* for testing experiments
-
-Linux, and Windows are supported (possible also OSX, not tested). The plug-in will first look for the globally installed rusocsci package. If this is not available, a shipped version will be used. Install options are listed below.
+This plug-in has two options:
+- *Send Command* select a command
+- *Value* for if the command needs a value
 
 
-Installation instructions: <http://osdoc.cogsci.nl/devices/triggers/>
+For more information:
+
+<http://tsgdoc.socsci.ru.nl/index.php?title=ButtonBoxes>
+
 
 
 2. LICENSE
 ----------
 
-The Radboud Buttonbox 'Send Trigger' plug-in is distributed under the terms of the GNU General Public License 3.
+The Radboud Buttonbox plug-in is distributed under the terms of the GNU General Public License 3.
 The full license should be included in the file COPYING, or can be obtained from
 
 - <http://www.gnu.org/licenses/gpl.txt>
 
-Radboud Buttonbox 'Send Trigger' plug-in contains works of others. For the full license information, please
+This plug-in contains works of others. For the full license information, please
 refer to `debian/copyright`.
 
 

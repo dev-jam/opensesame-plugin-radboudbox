@@ -1,23 +1,39 @@
 description: Radboud Buttonbox 'init' plug-in.
-version: 0.2
+version: 2017.11-1
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
-date: "2016"
+date: "2017"
 controls:
 -
     label: "Dummy Mode"
-    name: "dummy_mode"
+    name: "checkbox_dummy"
     tooltip: "Run in dummy mode"
     type: "checkbox"
-    var: "radboudbox_dummy"
+    var: "dummy_mode"
+-
+    label: "Verbose Mode"
+    name: "checkbox_verbose"
+    tooltip: "Run in dummy mode"
+    type: "checkbox"
+    var: "verbose"
 -
     label: Device id
-    var: id
-    type: line_edit
+    name: "line_edit_id"
     tooltip: Expecting a valid device name. Leave empty for autodetect.
+    type: line_edit
+    var: id
 -
     label: Port
-    var: port
-    type: line_edit
+    name: "line_edit_port"
     tooltip: Expecting a valid port device name. Leave empty for autodetect.
+    type: line_edit
+    var: port
+-
+    label: |
+      <small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialisation of the buttonbox</small>
+    type: text
+-
+    type: text
+    label: DUMMY
+    name: text_version

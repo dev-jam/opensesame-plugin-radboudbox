@@ -29,7 +29,9 @@ from libopensesame.py3compat import *
 from libopensesame import debug
 from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
-import time
+from libopensesame.exceptions import osexception
+
+VERSION = u'2017.11-1'
 
 CMD_DICT = {u'Calibrate Sound': [u'C',u'S'],
 			u'Calibrate Voice': [u'C',u'V'],
@@ -65,15 +67,32 @@ class radboudbox_send_control(item):
     # Provide an informative description for your plug-in.
     description = u'Radboud Buttonbox \'Send Trigger\' Plug-in'
 
+    def __init__(self, name, experiment, string=None):
+
+        item.__init__(self, name, experiment, string)
+        self.verbose = u'no'
+
+
     def reset(self):
 
         """Resets plug-in to initial values."""
 
-        # Set default experimental variables and values
+        pass
 
-        # Debugging output is only visible when OpenSesame is started with the
-        # --debug argument.
-        debug.msg(u'Radboud Buttonbox plug-in has been initialized!')
+    def init_var(self):
+
+        """Set en check variables."""
+
+        if hasattr(self.experiment, "radboudbox_dummy_mode"):
+            self.dummy_mode = self.experiment.radboudbox_dummy_mode
+            self.verbose = self.experiment.radboudbox_verbose
+        else:
+            raise osexception(
+                    u'You should have one instance of `radboudbox_init` at the start of your experiment')
+
+        self.command = self.var.command
+        self.cmd = CMD_DICT[self.command]
+
 
     def prepare(self):
 
@@ -82,42 +101,42 @@ class radboudbox_send_control(item):
         # Call the parent constructor.
         item.prepare(self)
 
-        if not hasattr(self.experiment, "radboudbox_dummy"):
-            raise osexception(
-                u'You should have one instance of `pygaze_init` at the start of your experiment')
+        self.init_var()
+
 
     def run(self):
 
         """Run phase"""
 
-        # self.set_item_onset() sets the time_[item name] variable. Optionally,
-        # you can pass a timestamp, such as returned by canvas.show().
-
-        self.radboudbox_command = self.var.radboudbox_command
-
-        self.cmd = CMD_DICT[self.radboudbox_command]
         if not isinstance(self.cmd, list):
             self.cmd = list(self.cmd)
-            self.cmd.append(self.radboudbox_command_value)
+            self.cmd.append(self.var.command)
 
-
-        if self.experiment.radboudbox_dummy == u'no':
-            if self.radboudbox_command in FLUSH_LIST:
-                print(u'Flushing events')                
+        self.set_item_onset()
+        if self.dummy_mode == u'no':
+            if self.command in FLUSH_LIST:
+                self.show_message(u'Flushing events')
                 self.experiment.radboudbox.clearEvents()
 
             self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[0])))
             self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[1])))
-            print(self.radboudbox_command)
-            #debug.msg(u'Sending value %s to the Radboud Buttonbox' % self.cmd[0])
-            #debug.msg(u'Sending value %s to the Radboud Buttonbox' % self.cmd[1])
-            #print(self.cmd[0])
-            #print(self.cmd[1])
+            self.show_message(''.join(self.cmd))
 
-            if self.radboudbox_command in PAUSE_LIST:
-                print(u'Calibration pause')                
-                time.sleep(1)
+            if self.command in PAUSE_LIST:
+                self.show_message(u'Calibration pause')
+                self.clock.sleep(1)
                 #self.clock.sleep(1000)
+
+
+    def show_message(self, message):
+        """
+        desc:
+            Show message.
+        """
+
+        debug.msg(message)
+        if self.verbose == u'yes':
+            print(message)
 
 
 class qtradboudbox_send_control(radboudbox_send_control, qtautoplugin):
@@ -128,3 +147,5 @@ class qtradboudbox_send_control(radboudbox_send_control, qtautoplugin):
 
         radboudbox_send_control.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)
+        self.text_version.setText(
+        u'<small>Parallel Port Trigger version %s</small>' % VERSION)

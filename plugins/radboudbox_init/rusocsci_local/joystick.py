@@ -11,7 +11,7 @@ Known issues:
 
 """
 import sys, serial, time, os, re, logging, struct
-import utils
+from . import utils
 
 # our buttonbox and joystick have id 0403:6001 from its UART IC
 # make sure you have the pyusb module installed

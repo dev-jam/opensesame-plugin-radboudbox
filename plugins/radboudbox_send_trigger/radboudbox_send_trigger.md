@@ -1,7 +1,7 @@
-OpenSesame Plug-in: Radboud Buttonbox 'Send Trigger' plugin (Beta)
+OpenSesame Plug-in: Radboud Buttonbox 'Send Trigger' plugin
 ==========
 
-*An OpenSesame Plug-in for sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.*  
+*An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.*  
 
 Copyright, 2016, Bob Rosbag  
 
@@ -15,12 +15,11 @@ The Technical Support Group (Radboud University, Social Sciences) developed an U
 
 This plug-in has three options:
 - *Value* is a positive integer between 1-255 and specifies the trigger byte
-- *Dummy mode* for testing experiments
-
-Linux, and Windows are supported (possible also OSX, not tested). The plug-in will first look for the globally installed rusocsci package. If this is not available, a shipped version will be used. Install options are listed below.
 
 
-Installation instructions: <http://osdoc.cogsci.nl/devices/triggers/>
+For more information:
+
+<http://tsgdoc.socsci.ru.nl/index.php?title=ButtonBoxes>
 
 
 2. LICENSE
@@ -31,7 +30,7 @@ The full license should be included in the file COPYING, or can be obtained from
 
 - <http://www.gnu.org/licenses/gpl.txt>
 
-Radboud Buttonbox 'Send Trigger' plug-in contains works of others. For the full license information, please
+This plug-in contains works of others. For the full license information, please
 refer to `debian/copyright`.
 
 

@@ -3,7 +3,7 @@
 """
 21-01-2016
 Author: Bob Rosbag
-Version: 1.0
+Version: 2.0
 
 This file is part of OpenSesame.
 
@@ -29,7 +29,9 @@ from libopensesame.py3compat import *
 from libopensesame import debug
 from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
+from libopensesame.exceptions import osexception
 
+VERSION = u'2017.11-1'
 
 class radboudbox_init(item):
 
@@ -41,18 +43,53 @@ class radboudbox_init(item):
     # Provide an informative description for your plug-in.
     description = u'Radboud Buttonbox \'Send Trigger\' Plug-in'
 
+    def __init__(self, name, experiment, string=None):
+
+        item.__init__(self, name, experiment, string)
+        self.verbose = u'no'
+
+
     def reset(self):
 
         """Resets plug-in to initial values."""
 
         # Set default experimental variables and values
-        self.var.radboudbox_dummy = u'no'
+        self.var.dummy_mode = u'no'
+        self.var.verbose = u'no'
         self.var.id = u'autodetect'
         self.var.port = u'autodetect'
 
         # Debugging output is only visible when OpenSesame is started with the
         # --debug argument.
-        debug.msg(u'Radboud Buttonbox plug-in has been initialized!')
+        self.show_message(u'Radboud Buttonbox plug-in has been initialized!')
+
+
+    def init_var(self):
+
+        """Set en check variables."""
+
+        self.dummy_mode = self.var.dummy_mode
+        self.verbose = self.var.verbose
+        self.experiment.radboudbox_dummy_mode = self.var.dummy_mode
+        self.experiment.radboudbox_verbose = self.var.verbose
+        self.experiment.radboudbox_get_buttons_locked = 0
+        self.experiment.radboudbox_get_buttons_wait = None
+        self.experiment.radboudbox_get_buttons_start = None
+
+        if self.var.id == u'autodetect':
+            self.id = 0
+        else:
+            self.id = self.var.id
+
+        if self.var.port == u'autodetect':
+            self.port = None
+        else:
+            self.port = self.var.port
+
+        if hasattr(self.experiment, "radboudbox"):
+            raise osexception(
+                    u'You should have only one instance of `radboudbox_init` in your experiment')
+
 
     def prepare(self):
 
@@ -60,29 +97,22 @@ class radboudbox_init(item):
 
         # Call the parent constructor.
         item.prepare(self)
+        self.close()
+        self.init_var()
 
-        self.experiment.radboudbox_dummy = self.var.radboudbox_dummy
-        self.id = self.var.id
-        self.port = self.var.port
-        if self.id == u'autodetect':
-            self.id = 0
-        if self.port == u'autodetect':
-            self.port = None
-        if hasattr(self.experiment, "radboudbox"):
-            try:
-                self.experiment.radboudbox.close()
-                self.experiment.radboudbox = None
-                debug.msg("radboudbox closed")
-            except:
-                debug.msg("failed to close radboudbox")
 
-        if self.experiment.radboudbox_dummy == u'no':
+        if self.dummy_mode == u'no':
             try:
                 from rusocsci import buttonbox
+                print('Imported system rusocsci')
                 print(buttonbox.__file__ )
             except ImportError:
-                debug.msg(u'The RuSocSci package could not be loaded. Check if the file is present and if the file permissions are correct.')
-
+                try:
+                    from rusocsci_local import buttonbox
+                    print(buttonbox.__file__ )
+                    print('Imported local rusocsci')
+                except ImportError:
+                    self.show_message(u'The RuSocSci package could not be loaded. Check if the file is present and if the file permissions are correct.')
             try:
                 self.experiment.radboudbox = buttonbox.Buttonbox(id=self.id, port=self.port)
                 self.clock.sleep(2000)
@@ -90,10 +120,10 @@ class radboudbox_init(item):
                 self.python_workspace[u'radboudbox'] = self.experiment.radboudbox
             except OSError:
                     debug.msg(u'Could not access the Radboud Buttonbox')
-        elif self.experiment.radboudbox_dummy == u'yes':
-            debug.msg(u'Dummy mode enabled, prepare phase')
+        elif self.dummy_mode == u'yes':
+            self.show_message(u'Dummy mode enabled, prepare phase')
         else:
-            debug.msg(u'Error with dummy mode, dummy mode: %s' % self.var.radboudbox_dummy)
+            self.show_message(u'Error with dummy mode, dummy mode: %s' % self.dummy_mode)
 
     def run(self):
 
@@ -101,6 +131,18 @@ class radboudbox_init(item):
 
         # self.set_item_onset() sets the time_[item name] variable. Optionally,
         # you can pass a timestamp, such as returned by canvas.show().
+        self.set_item_onset()
+
+
+    def show_message(self, message):
+        """
+        desc:
+            Show message.
+        """
+
+        debug.msg(message)
+        if self.verbose == u'yes':
+            print(message)
 
 
     def close(self):
@@ -112,14 +154,15 @@ class radboudbox_init(item):
 
         if not hasattr(self.experiment, "radboudbox") or \
             self.experiment.radboudbox is None:
-                debug.msg("no active radboudbox")
+                self.show_message("no active radboudbox")
                 return
         try:
+            self.experiment.radboudbox.clearEvents()
             self.experiment.radboudbox.close()
             self.experiment.radboudbox = None
-            debug.msg("radboudbox closed")
+            self.show_message("radboudbox closed")
         except:
-            debug.msg("failed to close radboudbox")
+            self.show_message("failed to close radboudbox")
 
 
 class qtradboudbox_init(radboudbox_init, qtautoplugin):
@@ -130,3 +173,5 @@ class qtradboudbox_init(radboudbox_init, qtautoplugin):
 
         radboudbox_init.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)
+        self.text_version.setText(
+        u'<small>Parallel Port Trigger version %s</small>' % VERSION)

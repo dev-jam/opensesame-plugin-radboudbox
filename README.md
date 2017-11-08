@@ -7,7 +7,8 @@ Copyright, 2017, Bob Rosbag
 
 This plugin makes use of the RuSocSci python package developed by Wilbert van der Ham. Radboud Buttonbox is developed by Pascal de Water. Exact references will follow in the future. 
 
-1. About
+
+## 1. About
 --------
 
 The Technical Support Group (Radboud University, Social Sciences) developed an USB Arduino based Buttonbox which can be used for time accurate(1ms) button press, voice key, sound key registration and sending parallel port like triggers.
@@ -28,8 +29,7 @@ This plug-in has five items:
 Linux, and Windows are supported (possible also OSX, not tested). The plug-in will first look for the globally installed rusocsci package. If this is not available, the shipped version will be used. Install options are listed below.
 
 
-
-2. LICENSE
+## 2. LICENSE
 ----------
 
 The Radboud Buttonbox plug-in is distributed under the terms of the GNU General Public License 3.
@@ -41,7 +41,7 @@ This plug-in contains works of others. For the full license information, please
 refer to `debian/copyright`.
 
 
-3. Documentation
+## 3. Documentation
 ----------------
 
 Installation instructions and documentation on OpenSesame are available on the documentation website:

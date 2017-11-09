@@ -31,7 +31,7 @@ VERSION = u'2017.11-1'
 
 class radboudbox_get_buttons_start(item, generic_response):
 
-     """
+    """
     Class handles the basic functionality of the item.
     It does not deal with GUI stuff.
     """

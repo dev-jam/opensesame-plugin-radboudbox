@@ -29,11 +29,11 @@ VERSION = u'2017.11-1'
 
 class radboudbox_wait_buttons(item, generic_response):
 
-     """
+    """
     Class handles the basic functionality of the item.
     It does not deal with GUI stuff.
     """
-
+    
     # Provide an informative description for your plug-in.
     description = u'Radboud Buttonbox: starts button registration on the foreground.'
 

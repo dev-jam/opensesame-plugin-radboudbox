@@ -115,7 +115,7 @@ class radboudbox_init(item):
                     self.show_message(u'The RuSocSci package could not be loaded. Check if the file is present and if the file permissions are correct.')
             try:
                 self.experiment.radboudbox = buttonbox.Buttonbox(id=self.id, port=self.port)
-                self.clock.sleep(2000)
+                self.clock.sleep(4000)
                 self.experiment.cleanup_functions.append(self.close)
                 self.python_workspace[u'radboudbox'] = self.experiment.radboudbox
             except OSError:

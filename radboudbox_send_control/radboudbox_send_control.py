@@ -56,6 +56,7 @@ PAUSE_LIST = [u'Calibrate Sound', u'Calibrate Voice']
 
 FLUSH_LIST = [u'Detect Sound', u'Detect Voice']
 
+PAUSE = 2000
 
 class radboudbox_send_control(item):
 
@@ -124,8 +125,7 @@ class radboudbox_send_control(item):
 
             if self.command in PAUSE_LIST:
                 self.show_message(u'Calibration pause')
-                self.clock.sleep(1)
-                #self.clock.sleep(1000)
+                self.clock.sleep(PAUSE)
 
 
     def show_message(self, message):

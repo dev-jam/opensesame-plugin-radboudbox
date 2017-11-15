@@ -23,7 +23,7 @@ from libqtopensesame.items.qtautoplugin import qtautoplugin
 from openexp.keyboard import keyboard
 from libopensesame.py3compat import *
 from libopensesame.item import item
-import time
+
 
 VERSION = u'2017.11-1'
 
@@ -41,7 +41,8 @@ class radboudbox_get_buttons_wait(item):
 
         item.__init__(self, name, experiment, string)
         self.verbose = u'no'
-        self.poll_time = 0.1
+        self.poll_time = 10
+
 
     def reset(self):
 
@@ -93,7 +94,7 @@ class radboudbox_get_buttons_wait(item):
 
             ## wait if thread has not started yet
             while not self.experiment.radboudbox_get_buttons_thread_running:
-                time.sleep(self.poll_time)
+                self.clock.sleep(self.poll_time)
 
             ## join thread if thread is still running
             if self.experiment.radboudbox_get_buttons_locked:

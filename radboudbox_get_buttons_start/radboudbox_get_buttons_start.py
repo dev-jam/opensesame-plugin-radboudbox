@@ -25,7 +25,7 @@ from libopensesame.py3compat import *
 from libopensesame.item import item
 from libopensesame.generic_response import generic_response
 import threading
-import time
+
 
 VERSION = u'2017.11-1'
 
@@ -43,7 +43,7 @@ class radboudbox_get_buttons_start(item, generic_response):
 
         item.__init__(self, name, experiment, string)
         self.verbose = u'no'
-        self.poll_time = 0.001
+        self.poll_time = 1
 
 
     def reset(self):
@@ -153,7 +153,7 @@ class radboudbox_get_buttons_start(item, generic_response):
 
                 self.show_message(u'Starting Collecting buttons')
                 while self.experiment.radboudbox_get_buttons_locked:
-                    time.sleep(self.poll_time)
+                    self.clock.sleep(self.poll_time)
 
                 self.experiment.radboudbox_get_buttons_locked = 1
                 self.experiment.radboudbox_get_buttons_thread = threading.Thread(target=self.start_buttons)
@@ -165,7 +165,7 @@ class radboudbox_get_buttons_start(item, generic_response):
                     "An error occured in radboudbox '%s': %s." % (self.name, e))
 
             while self.stop:
-                time.sleep(self.poll_time)
+                self.clock.sleep(self.poll_time)
 
 
     def start_buttons(self):

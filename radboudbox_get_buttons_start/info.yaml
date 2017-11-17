@@ -12,7 +12,7 @@ controls:
     type: line_edit
     var: allowed_responses
 -
-    label: Timeout
+    label: Timeout (ms)
     name: "line_edit_timeout"
     tooltip: Expecting a value in milliseconds or 'infinite'  
     type: line_edit

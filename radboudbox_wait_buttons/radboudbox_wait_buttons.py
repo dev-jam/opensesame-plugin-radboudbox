@@ -132,9 +132,8 @@ class radboudbox_wait_buttons(item, generic_response):
             try:
                 #self.experiment.radboudbox.clearEvents()
                 [resp] = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
-                detect_time = self.clock.time()
-                self.experiment.end_response_interval   = detect_time
-                self.experiment.var.time_button_detect  = detect_time
+                self.set_response_time()
+                self.experiment.end_response_interval   = self.clock.time()
             except Exception as e:
                 raise osexception(
                     "An error occured in radboudbox '%s': %s." % (self.name, e))
@@ -148,7 +147,7 @@ class radboudbox_wait_buttons(item, generic_response):
                 keylist=self._allowed_responses, timeout=self._timeout)
 
         self.show_message("Detected press on button: '%s'" % resp)
-        #self.set_response(resp, self.experiment.end_response_interval, None)
+        self.set_response(resp, self.experiment.end_response_interval, None)
         self.experiment.var.response = resp
         generic_response.response_bookkeeping(self)
 
@@ -173,6 +172,26 @@ class radboudbox_wait_buttons(item, generic_response):
 
         return item.var_info(self) + \
             generic_response.var_info(self)
+
+
+    def set_response_time(self, time=None):
+
+        """
+        desc:
+            Set a timestamp for the onset time of the item's execution.
+
+        keywords:
+            time:    A timestamp or None to use the current time.
+
+        returns:
+            desc:    A timestamp.
+        """
+
+        if time is None:
+            time = self.clock.time()
+        self.experiment.var.set(u'time_%s_response' % self.name, time)
+        return time
+
 
 
 class qtradboudbox_wait_buttons(radboudbox_wait_buttons, qtautoplugin):

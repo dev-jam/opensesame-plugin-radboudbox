@@ -84,11 +84,11 @@ class radboudbox_get_buttons_wait(item):
 
         """Run phase"""
 
+        self.set_item_onset()
+
         if not hasattr(self.experiment, "radboudbox_get_buttons_start"):
             raise osexception(
                     u'Radboudbox Get Buttons Start item is missing')
-
-        self.set_item_onset()
 
         if self.dummy_mode == u'no':
 
@@ -107,6 +107,25 @@ class radboudbox_get_buttons_wait(item):
             self.show_message(u'Dummy mode enabled, NOT playing audio')
         else:
             self.show_message(u'Error with dummy mode!')
+
+
+    def set_response_time(self, time=None):
+
+        """
+        desc:
+            Set a timestamp for the onset time of the item's execution.
+
+        keywords:
+            time:    A timestamp or None to use the current time.
+
+        returns:
+            desc:    A timestamp.
+        """
+
+        if time is None:
+            time = self.clock.time()
+        self.experiment.var.set(u'time_%s_response' % self.name, time)
+        return time
 
 
     def show_message(self, message):

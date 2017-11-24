@@ -145,6 +145,25 @@ class radboudbox_init(item):
             print(message)
 
 
+    def set_response_time(self, time=None):
+
+        """
+        desc:
+            Set a timestamp for the onset time of the item's execution.
+
+        keywords:
+            time:    A timestamp or None to use the current time.
+
+        returns:
+            desc:    A timestamp.
+        """
+
+        if time is None:
+            time = self.clock.time()
+        self.experiment.var.set(u'time_%s_response' % self.name, time)
+        return time
+
+
     def close(self):
 
         """

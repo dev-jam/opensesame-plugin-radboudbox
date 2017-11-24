@@ -126,13 +126,12 @@ class radboudbox_get_buttons_start(item, generic_response):
             Runs the item.
         """
 
+        self.set_item_onset()
+
         if not hasattr(self.experiment, "radboudbox_get_buttons_wait"):
             raise osexception(
                     u'Radboudbox Get Buttons Wait item is missing')
 
-        self.experiment.var.radboudbox_start = self.clock.time()
-
-        self.set_item_onset()
         self._keyboard.flush()
         self.set_sri(reset=True)
 
@@ -142,6 +141,7 @@ class radboudbox_get_buttons_start(item, generic_response):
                 self._allowed_responses = list(range(0,10))
             resp, self.experiment.end_response_interval = self._resp_func(
                 keylist=self._allowed_responses, timeout=self._timeout)
+
             self.show_message("Detected press on button: '%s'" % resp)
             self.experiment.var.response = resp
             generic_response.response_bookkeeping(self)
@@ -175,9 +175,8 @@ class radboudbox_get_buttons_start(item, generic_response):
         self.stop = 0
 
         [resp] = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
-        detect_time = self.clock.time()
-        self.experiment.end_response_interval   = detect_time
-        self.experiment.var.time_button_detect  = detect_time
+        self.experiment.end_response_interval   = self.clock.time()
+        self.set_response_time()
 
         if isinstance(resp, list):
             resp = resp[0]
@@ -198,6 +197,24 @@ class radboudbox_get_buttons_start(item, generic_response):
         if self.verbose == u'yes':
             print(message)
 
+
+    def set_response_time(self, time=None):
+
+        """
+        desc:
+            Set a timestamp for the onset time of the item's execution.
+
+        keywords:
+            time:    A timestamp or None to use the current time.
+
+        returns:
+            desc:    A timestamp.
+        """
+
+        if time is None:
+            time = self.clock.time()
+        self.experiment.var.set(u'time_%s_response' % self.name, time)
+        return time
 
     def var_info(self):
 

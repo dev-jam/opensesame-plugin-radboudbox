@@ -198,6 +198,17 @@ class radboudbox_get_buttons_start(item, generic_response):
             print(message)
 
 
+    def var_info(self):
+
+        """
+        returns:
+            A list of (name, description) tuples with variable descriptions.
+        """
+
+        return item.var_info(self) + \
+            generic_response.var_info(self)
+
+
     def set_response_time(self, time=None):
 
         """
@@ -213,18 +224,8 @@ class radboudbox_get_buttons_start(item, generic_response):
 
         if time is None:
             time = self.clock.time()
-        self.experiment.var.set(u'time_%s_response' % self.name, time)
+        self.experiment.var.set(u'time_response_%s' % self.name, time)
         return time
-
-    def var_info(self):
-
-        """
-        returns:
-            A list of (name, description) tuples with variable descriptions.
-        """
-
-        return item.var_info(self) + \
-            generic_response.var_info(self)
 
 
 class qtradboudbox_get_buttons_start(radboudbox_get_buttons_start, qtautoplugin):

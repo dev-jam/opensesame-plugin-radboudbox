@@ -87,6 +87,7 @@ class radboudbox_send_trigger(item):
         if self.dummy_mode == u'no':
             ## turn trigger on
             #self.experiment.radboudbox.clearEvents()
+            self.set_item_onset()
             self.experiment.radboudbox.sendMarker(val=self.value)
             debug.msg(u'Sending value %s to the Radboud Buttonbox' % self.value)
         elif self.dummy_mode == u'yes':

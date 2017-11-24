@@ -189,9 +189,8 @@ class radboudbox_wait_buttons(item, generic_response):
 
         if time is None:
             time = self.clock.time()
-        self.experiment.var.set(u'time_%s_response' % self.name, time)
+        self.experiment.var.set(u'time_response_%s' % self.name, time)
         return time
-
 
 
 class qtradboudbox_wait_buttons(radboudbox_wait_buttons, qtautoplugin):

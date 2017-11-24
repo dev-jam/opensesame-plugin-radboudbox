@@ -1,20 +1,21 @@
 #-*- coding:utf-8 -*-
 
 """
-This file is part of OpenSesame.
+Author: Bob Rosbag
+2017
 
-OpenSesame is free software: you can redistribute it and/or modify
+This plug-in is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.
 
-OpenSesame is distributed in the hope that it will be useful,
+This software is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with OpenSesame.  If not, see <http://www.gnu.org/licenses/>.
+along with this plug-in.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 from libopensesame.exceptions import osexception
@@ -24,12 +25,10 @@ import openexp.keyboard
 from libopensesame.py3compat import *
 from libopensesame.item import item
 from libopensesame.generic_response import generic_response
-import threading
-
 
 VERSION = u'2017.11-1'
 
-class radboudbox_get_buttons_start(item, generic_response):
+class radboudbox_wait_buttons(item, generic_response):
 
     """
     Class handles the basic functionality of the item.
@@ -37,13 +36,12 @@ class radboudbox_get_buttons_start(item, generic_response):
     """
 
     # Provide an informative description for your plug-in.
-    description = u'Radboud Buttonbox: starts button registration in the background.'
+    description = u'Radboud Buttonbox: starts button registration on the foreground.'
 
     def __init__(self, name, experiment, string=None):
 
         item.__init__(self, name, experiment, string)
         self.verbose = u'no'
-        self.poll_time = 1
 
 
     def reset(self):
@@ -74,10 +72,9 @@ class radboudbox_get_buttons_start(item, generic_response):
         self.allowed_responses = self.var.allowed_responses
         self.timeout = self.var.timeout
 
-        self.experiment.var.radboudbox_get_buttons_start_allowed_responses = self.var.allowed_responses
-        self.experiment.var.radboudbox_get_buttons_start_timeout = self.var.timeout
+        self.experiment.var.radboudbox_wait_buttons_allowed_responses = self.var.allowed_responses
+        self.experiment.var.radboudbox_wait_buttons_timeout = self.var.timeout
 
-        self.experiment.radboudbox_get_buttons_start = 1
 
 
     def prepare(self):
@@ -107,17 +104,18 @@ class radboudbox_get_buttons_start(item, generic_response):
         self._keyboard = openexp.keyboard.keyboard(self.experiment)
         if self.dummy_mode == u'yes':
             self._resp_func = self._keyboard.get_key
+            return
         else:
             if self.timeout == u'infinite' or self.timeout == None:
                 self._timeout = float("inf")
             else:
                 self._timeout = self.timeout
 
-            # Prepare auto response
-            if self.experiment.auto_response:
-                self._resp_func = self.auto_responder
-            else:
-                self._resp_func = self.experiment.radboudbox.waitButtons
+        # Prepare auto response
+        if self.experiment.auto_response:
+            self._resp_func = self.auto_responder
+        else:
+            self._resp_func = self.experiment.radboudbox.waitButtons
 
     def run(self):
 
@@ -127,65 +125,33 @@ class radboudbox_get_buttons_start(item, generic_response):
         """
 
         self.set_item_onset()
-
-        if not hasattr(self.experiment, "radboudbox_get_buttons_wait"):
-            raise osexception(
-                    u'Radboudbox Get Buttons Wait item is missing')
-
         self._keyboard.flush()
         self.set_sri(reset=True)
 
-        if self.dummy_mode == 'yes':
+        if self.dummy_mode == 'no':
+            # Get the response
+            try:
+                #self.experiment.radboudbox.clearEvents()
+                [resp] = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
+                self.set_response_time()
+                self.experiment.end_response_interval   = self.clock.time()
+            except Exception as e:
+                raise osexception(
+                    "An error occured in radboudbox '%s': %s." % (self.name, e))
+            if isinstance(resp, list):
+                resp = resp[0]
+        else:
             # In dummy mode, we simply take the numeric keys from the keyboard
             if self._allowed_responses is None:
                 self._allowed_responses = list(range(0,10))
             resp, self.experiment.end_response_interval = self._resp_func(
                 keylist=self._allowed_responses, timeout=self._timeout)
 
-            self.show_message("Detected press on button: '%s'" % resp)
-            self.experiment.var.response = resp
-            generic_response.response_bookkeeping(self)
-        else:
-            # Get the response
-            try:
-                #self.experiment.radboudbox.clearEvents()
-                self.stop = 1
-
-                self.show_message(u'Starting Collecting buttons')
-                while self.experiment.radboudbox_get_buttons_locked:
-                    self.clock.sleep(self.poll_time)
-
-                self.experiment.radboudbox_get_buttons_locked = 1
-                self.experiment.radboudbox_get_buttons_thread = threading.Thread(target=self.start_buttons)
-                self.experiment.radboudbox_get_buttons_thread.start()
-
-
-            except Exception as e:
-                raise osexception(
-                    "An error occured in radboudbox '%s': %s." % (self.name, e))
-
-            while self.stop:
-                self.clock.sleep(self.poll_time)
-
-
-    def start_buttons(self):
-
-        self.experiment.radboudbox_get_buttons_thread_running = 1
-        self.set_item_onset()
-        self.stop = 0
-
-        [resp] = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
-        self.experiment.end_response_interval   = self.clock.time()
-        self.set_response_time()
-
-        if isinstance(resp, list):
-            resp = resp[0]
-
         self.show_message("Detected press on button: '%s'" % resp)
-        #self.set_response(resp, detect_time, None)
+        self.set_response(resp, self.experiment.end_response_interval, None)
         self.experiment.var.response = resp
         generic_response.response_bookkeeping(self)
-        self.experiment.radboudbox_get_buttons_locked = 0
+
 
     def show_message(self, message):
         """
@@ -228,11 +194,11 @@ class radboudbox_get_buttons_start(item, generic_response):
         return time
 
 
-class qtradboudbox_get_buttons_start(radboudbox_get_buttons_start, qtautoplugin):
+class qtradboudbox_wait_buttons(radboudbox_wait_buttons, qtautoplugin):
 
     def __init__(self, name, experiment, script=None):
 
-        radboudbox_get_buttons_start.__init__(self, name, experiment, script)
+        radboudbox_wait_buttons.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)
         self.text_version.setText(
         u'<small>Parallel Port Trigger version %s</small>' % VERSION)

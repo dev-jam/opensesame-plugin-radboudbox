@@ -38,6 +38,9 @@ This plug-in has six items:
 - **Send Trigger** for sending triggers to hardware with a parallel port
 
 
+Timestamps can be found in the logs by the name: time_response_[item_name]
+
+
 Linux, and Windows are supported (possible also OSX, not tested). The plug-in will first look for the globally installed rusocsci package. If this is not available, the shipped version will be used. Install options are listed below.
   
   

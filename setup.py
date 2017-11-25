@@ -28,7 +28,7 @@ setup(
     version='1.0.0',
     description='An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.',
     author='Bob Rosbag',
-    author_email='mail@bobrosbag.nl',
+    author_email='b.rosbag@let.ru.nl',
     url='https://github.com/dev-jam/opensesame_plugin_-_radboudbox',
     # Classifiers used by PyPi if you upload the plugin there
     classifiers=[
@@ -37,7 +37,7 @@ setup(
         'Environment :: MacOS X',
         'Environment :: Win32 (MS Windows)',
         'Environment :: X11 Applications',
-        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
     ],

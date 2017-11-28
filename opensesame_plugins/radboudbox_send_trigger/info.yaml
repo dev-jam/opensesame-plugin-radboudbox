@@ -8,7 +8,7 @@ controls:
 -
     label: "Value"
     name: "line_edit_value"
-    tooltip: "Value to set port"
+    info: "Value to set port"
     type: "line_edit"
     var: "value"
 -

@@ -118,11 +118,12 @@ class radboudbox_send_control(item):
 
             self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[0])))
             self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[1])))
-            self.show_message(''.join(self.cmd))
+            self.show_message(u'Sending command: %s' % (''.join(self.cmd)))
 
             if self.command in PAUSE_LIST:
-                self.show_message(u'Calibration pause')
+                self.show_message(u'Sound/voice calibration for %d ms' % (PAUSE))
                 self.clock.sleep(PAUSE)
+                self.show_message(u'Sound/voice calibration done!')
 
 
     def show_message(self, message):

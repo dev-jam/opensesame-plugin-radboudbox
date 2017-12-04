@@ -109,7 +109,7 @@ class radboudbox_wait_buttons(item, generic_response):
             if self.timeout == u'infinite' or self.timeout == None:
                 self._timeout = float("inf")
             else:
-                self._timeout = self.timeout
+                self._timeout = float(self.timeout) / 1000
 
         # Prepare auto response
         if self.experiment.auto_response:
@@ -132,13 +132,15 @@ class radboudbox_wait_buttons(item, generic_response):
             # Get the response
             try:
                 #self.experiment.radboudbox.clearEvents()
-                [resp] = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
+                resp = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
                 self.set_response_time()
                 self.experiment.end_response_interval   = self.clock.time()
             except Exception as e:
                 raise osexception(
                     "An error occured in radboudbox '%s': %s." % (self.name, e))
-            if isinstance(resp, list):
+            if not resp:
+                resp = u'NA'
+            elif isinstance(resp, list):
                 resp = resp[0]
         else:
             # In dummy mode, we simply take the numeric keys from the keyboard

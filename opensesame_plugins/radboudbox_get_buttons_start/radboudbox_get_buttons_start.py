@@ -112,7 +112,7 @@ class radboudbox_get_buttons_start(item, generic_response):
             if self.timeout == u'infinite' or self.timeout == None:
                 self._timeout = float("inf")
             else:
-                self._timeout = self.timeout
+                self._timeout = float(self.timeout) / 1000
 
             # Prepare auto response
             if self.experiment.auto_response:
@@ -175,11 +175,13 @@ class radboudbox_get_buttons_start(item, generic_response):
         self.set_item_onset()
         self.stop = 0
 
-        [resp] = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
+        resp = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
         self.experiment.end_response_interval   = self.clock.time()
         self.set_response_time()
 
-        if isinstance(resp, list):
+        if not resp:
+            resp = u'NA'
+        elif isinstance(resp, list):
             resp = resp[0]
 
         self.show_message("Detected press on button: '%s'" % resp)

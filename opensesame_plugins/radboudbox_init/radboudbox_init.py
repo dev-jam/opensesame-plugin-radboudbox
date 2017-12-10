@@ -97,19 +97,11 @@ class radboudbox_init(item):
         self.close()
         self.init_var()
 
-
         if self.dummy_mode == u'no':
             try:
                 from rusocsci import buttonbox
-                print('Imported system rusocsci')
-                print(buttonbox.__file__ )
             except ImportError:
-                try:
-                    from rusocsci_local import buttonbox
-                    print(buttonbox.__file__ )
-                    print('Imported local rusocsci')
-                except ImportError:
-                    self.show_message(u'The RuSocSci package could not be loaded. Check if the file is present and if the file permissions are correct.')
+                self.show_message(u'The RuSocSci package could not be imported. Please install package.')
             try:
                 self.experiment.radboudbox = buttonbox.Buttonbox(id=self.id, port=self.port)
                 self.clock.sleep(4000)

@@ -18,6 +18,12 @@ controls:
     type: line_edit
     var: timeout
 -
+    label: "Flush"
+    name: "checkbox_flush"
+    tooltip: "Flush buffer before start"
+    type: "checkbox"
+    var: "flush"
+-
     label: |
       <b>IMPORTANT:</b> this is a multithreaded background item, it will immediately advance to the next item, it will NOT wait for the button press/release or till the timeout has ended.
     type: "text"

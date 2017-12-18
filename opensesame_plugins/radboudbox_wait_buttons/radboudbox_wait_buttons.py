@@ -52,6 +52,7 @@ class radboudbox_wait_buttons(item, generic_response):
         """
 
         self.var.timeout = u'infinite'
+        self.var.flush = u'yes'
         #self.var.lights = u''
         #self.var.require_state_change = u'no'
         #self.process_feedback = True
@@ -71,10 +72,13 @@ class radboudbox_wait_buttons(item, generic_response):
 
         self.allowed_responses = self.var.allowed_responses
         self.timeout = self.var.timeout
+        if self.var.flush == u'no':
+            self.flush = False
+        else:
+            self.flush = True
 
         self.experiment.var.radboudbox_wait_buttons_allowed_responses = self.var.allowed_responses
         self.experiment.var.radboudbox_wait_buttons_timeout = self.var.timeout
-
 
 
     def prepare(self):
@@ -132,7 +136,7 @@ class radboudbox_wait_buttons(item, generic_response):
             # Get the response
             try:
                 #self.experiment.radboudbox.clearEvents()
-                resp = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
+                resp = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses, flush=self.flush)
                 self.set_response_time()
                 self.experiment.end_response_interval   = self.clock.time()
             except Exception as e:

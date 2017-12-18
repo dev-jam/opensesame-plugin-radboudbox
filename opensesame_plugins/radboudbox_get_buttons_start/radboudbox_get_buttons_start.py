@@ -55,6 +55,7 @@ class radboudbox_get_buttons_start(item, generic_response):
         """
 
         self.var.timeout = u'infinite'
+        self.var.flush = u'yes'
         #self.var.lights = u''
         #self.var.require_state_change = u'no'
         #self.process_feedback = True
@@ -74,6 +75,10 @@ class radboudbox_get_buttons_start(item, generic_response):
 
         self.allowed_responses = self.var.allowed_responses
         self.timeout = self.var.timeout
+        if self.var.flush == u'no':
+            self.flush = False
+        else:
+            self.flush = True
 
         self.experiment.var.radboudbox_get_buttons_start_allowed_responses = self.var.allowed_responses
         self.experiment.var.radboudbox_get_buttons_start_timeout = self.var.timeout
@@ -175,7 +180,7 @@ class radboudbox_get_buttons_start(item, generic_response):
         self.set_item_onset()
         self.stop = 0
 
-        resp = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses)
+        resp = self._resp_func(maxWait=self._timeout, buttonList=self._allowed_responses, flush=self.flush)
         self.experiment.end_response_interval   = self.clock.time()
         self.set_response_time()
 

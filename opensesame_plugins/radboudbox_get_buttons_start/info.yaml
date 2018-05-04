@@ -1,13 +1,13 @@
 description: Radboud Buttonbox - starts button registration in the background.
-version: 2017.11-1
+version: 2018.05-1
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
-date: "2017"
+date: "2018"
 controls:
 -
     label: Allowed responses
-    info: Expecting a semicolon-separated list of button numbers, e.g., 1;3;4
+    info: Expecting a semicolon-separated list of button characters, e.g., A;B;C - Upper-case (H) for presses, lower-case (h) for release and S / V for sound/voice detect etc...
     name: "line_edit_allowed_responses"
     type: line_edit
     var: allowed_responses

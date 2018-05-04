@@ -28,7 +28,7 @@ from libopensesame.generic_response import generic_response
 import threading
 
 
-VERSION = u'2017.11-1'
+VERSION = u'2018.05-1'
 
 class radboudbox_get_buttons_start(item, generic_response):
 
@@ -243,4 +243,4 @@ class qtradboudbox_get_buttons_start(radboudbox_get_buttons_start, qtautoplugin)
         radboudbox_get_buttons_start.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)
         self.text_version.setText(
-        u'<small>Parallel Port Trigger version %s</small>' % VERSION)
+        u'<small>Radboudbox version %s</small>' % VERSION)

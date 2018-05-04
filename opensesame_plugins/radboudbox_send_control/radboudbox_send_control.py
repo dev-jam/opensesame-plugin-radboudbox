@@ -28,7 +28,7 @@ from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
 from libopensesame.exceptions import osexception
 
-VERSION = u'2017.11-1'
+VERSION = u'2018.05-1'
 
 CMD_DICT = {u'Calibrate Sound': [u'C',u'S'],
             u'Calibrate Voice': [u'C',u'V'],
@@ -146,4 +146,4 @@ class qtradboudbox_send_control(radboudbox_send_control, qtautoplugin):
         radboudbox_send_control.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)
         self.text_version.setText(
-        u'<small>Parallel Port Trigger version %s</small>' % VERSION)
+        u'<small>Radboudbox version %s</small>' % VERSION)

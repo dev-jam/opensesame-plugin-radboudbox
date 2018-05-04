@@ -26,7 +26,7 @@ from libopensesame.py3compat import *
 from libopensesame.item import item
 from libopensesame.generic_response import generic_response
 
-VERSION = u'2017.11-1'
+VERSION = u'2018.05-1'
 
 class radboudbox_wait_buttons(item, generic_response):
 
@@ -207,4 +207,4 @@ class qtradboudbox_wait_buttons(radboudbox_wait_buttons, qtautoplugin):
         radboudbox_wait_buttons.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)
         self.text_version.setText(
-        u'<small>Parallel Port Trigger version %s</small>' % VERSION)
+        u'<small>Radboudbox version %s</small>' % VERSION)

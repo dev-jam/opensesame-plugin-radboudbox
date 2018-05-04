@@ -1,9 +1,9 @@
 description: Radboud Buttonbox - sends a trigger.
-version: 2017.11-1
+version: 2018.05-1
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
-date: "2017"
+date: "2018"
 controls:
 -
     label: "Value"

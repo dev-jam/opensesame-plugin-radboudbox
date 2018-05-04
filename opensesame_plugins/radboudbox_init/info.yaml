@@ -1,9 +1,9 @@
 description: Radboud Buttonbox - initializes the buttonbox.
-version: 2017.11-1
+version: 2018.05-1
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
-date: "2017"
+date: "2018"
 controls:
 -
     label: "Dummy Mode"
@@ -20,13 +20,13 @@ controls:
 -
     label: Device id
     name: "line_edit_id"
-    tooltip: Expecting a valid device name. Leave empty for autodetect.
+    tooltip: Expecting a valid device name or autodetect.
     type: line_edit
     var: id
 -
     label: Port
     name: "line_edit_port"
-    tooltip: Expecting a valid port device name. Leave empty for autodetect.
+    tooltip: Expecting a valid port device name or autodetect.
     type: line_edit
     var: port
 -

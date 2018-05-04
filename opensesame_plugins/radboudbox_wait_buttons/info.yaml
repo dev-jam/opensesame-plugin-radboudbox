@@ -7,7 +7,7 @@ date: "2018"
 controls:
 -
     label: Allowed responses
-    info: Expecting a semicolon-separated list of button characters, e.g., A;B;C or S
+    info: Expecting a semicolon-separated list of button characters, e.g., A;B;C - Upper-case (H) for presses, lower-case (h) for release and S / V for sound/voice detect etc...
     name: "line_edit_allowed_responses"
     type: line_edit
     var: allowed_responses

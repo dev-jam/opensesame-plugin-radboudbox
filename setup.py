@@ -25,7 +25,7 @@ setup(
     # Some general metadata. By convention, a plugin is named:
     # opensesame-plugin-[plugin name]
     name='opensesame_plugin_-_radboudbox',
-    version='1.0.7',
+    version='1.0.8',
     description='An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.',
     author='Bob Rosbag',
     author_email='b.rosbag@let.ru.nl',

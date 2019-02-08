@@ -28,7 +28,7 @@ from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
 from libopensesame.exceptions import osexception
 
-VERSION = u'2018.05-1'
+VERSION = u'2019.02-1'
 
 CMD_DICT = {u'Calibrate Sound': [u'C',u'S'],
             u'Calibrate Voice': [u'C',u'V'],

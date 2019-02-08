@@ -73,7 +73,7 @@ class radboudbox_get_buttons_wait(item):
         """
 
         item.prepare(self)
-        self.prepare_timeout()
+        #self.prepare_timeout()
 
         # create keyboard object
         #self.kb = keyboard(self.experiment,timeout=1)

@@ -28,7 +28,7 @@ from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
 from libopensesame.exceptions import osexception
 
-VERSION = u'2019.02-1'
+VERSION = u'2020.01-1'
 
 class radboudbox_send_trigger(item):
 
@@ -112,5 +112,3 @@ class qtradboudbox_send_trigger(radboudbox_send_trigger, qtautoplugin):
 
         radboudbox_send_trigger.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)
-        self.text_version.setText(
-        u'<small>Radboudbox version %s</small>' % VERSION)

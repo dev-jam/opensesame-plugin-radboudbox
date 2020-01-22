@@ -1,5 +1,5 @@
 description: Radboud Buttonbox - sends a control command to the buttonbox.
-version: 2019.02-1
+version: 2020.01-1
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
@@ -40,6 +40,6 @@ controls:
       <small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialisation of the buttonbox</small>
     type: text
 -
-    type: text
-    label: DUMMY
-    name: text_version
+    label:  |
+      <small>Radboud Buttonbox version 2020.1-1</small>
+    type: "text"

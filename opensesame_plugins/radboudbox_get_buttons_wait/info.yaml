@@ -1,15 +1,15 @@
 description: Radboud Buttonbox - waits until the background button registration has finished.
-version: 2019.02-1
+version: 2020.01-1
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
-date: "2018"
+date: "2020"
 controls:
 -
     label: |
       <small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialisation of the buttonbox</small>
     type: text
 -
-    type: text
-    label: DUMMY
-    name: text_version
+    label:  |
+      <small>Radboud Buttonbox version 2020.1-1</small>
+    type: "text"

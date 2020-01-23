@@ -7,7 +7,7 @@ date: "2020"
 controls:
 -
     label: |
-      <small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialisation of the buttonbox</small>
+      <small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>
     type: text
 -
     label:  |

@@ -17,7 +17,7 @@ Upper case A, B, C, D, E, F are used for key presses, and lower case a, b, c, d,
 
 This plug-in has two options:
 
-- *Allowed Resonses* list of buttons separated by ';'
+- *Allowed Responses* list of buttons separated by ';'
 - *Timeout* time to wait for a button press/release
 
 

@@ -2,7 +2,7 @@
 
 """
 Author: Bob Rosbag
-2017
+2020
 
 This plug-in is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ from libopensesame.generic_response import generic_response
 import threading
 
 
-VERSION = u'2020.01-1'
+VERSION = u'2020.11-1'
 
 class radboudbox_get_buttons_start(item, generic_response):
 

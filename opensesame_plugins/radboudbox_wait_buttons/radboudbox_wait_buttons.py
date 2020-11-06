@@ -152,6 +152,7 @@ class radboudbox_wait_buttons(item, generic_response):
                 self._allowed_responses = list(range(0,10))
             resp, self.experiment.end_response_interval = self._resp_func(
                 keylist=self._allowed_responses, timeout=self._timeout)
+            self.set_response_time()
 
         self.show_message("Detected press on button: '%s'" % resp)
         self.set_response(resp, self.experiment.end_response_interval, None)

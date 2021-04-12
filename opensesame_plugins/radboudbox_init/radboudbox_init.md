@@ -3,7 +3,7 @@ OpenSesame Plug-in: Radboud Buttonbox 'Init' plugin
 
 *An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.*  
 
-Copyright, 2020, Bob Rosbag  
+Copyright, 2021, Bob Rosbag  
 
 This plugin makes use of the RuSocSci python package developed by Wilbert van der Ham. Radboud Buttonbox is developed by Pascal de Water. Exact references will follow in the future. 
 
@@ -14,7 +14,7 @@ This plugin makes use of the RuSocSci python package developed by Wilbert van de
 The Technical Support Group (Radboud University, Social Sciences) developed an USB Arduino based Buttonbox which can be used for time accurate(1ms) button press, voice key, sound key registration and sending parallel port like triggers.
 Upper case A, B, C, D, E, F are used for key presses, and lower case a, b, c, d, e, f are used for key releases. Uppercase S is used for sound key detection and uppercase V for voice key.  
 
-This plug-in has four items:
+This item has four parameters:
 
 - *Dummy mode* for testing experiments.
 - *Verbose mode* for testing experiments.
@@ -38,8 +38,7 @@ The full license should be included in the file COPYING, or can be obtained from
 
 - <http://www.gnu.org/licenses/gpl.txt>
 
-This plug-in contains works of others. For the full license information, please
-refer to `debian/copyright`.
+This plug-in contains works of others.
 
 
 ## 3. Documentation

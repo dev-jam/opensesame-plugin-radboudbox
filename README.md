@@ -3,7 +3,7 @@ OpenSesame Plug-in: Radboud Buttonbox plugin
 
 *An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.*  
 
-Copyright, 2020, Bob Rosbag
+Copyright, 2021, Bob Rosbag
 
 This plugin makes use of the RuSocSci python package developed by Wilbert van der Ham. Radboud Buttonbox is developed by Pascal de Water. Exact references will follow in the future. 
   
@@ -52,8 +52,7 @@ The full license should be included in the file COPYING, or can be obtained from
 
 - <http://www.gnu.org/licenses/gpl.txt>
 
-This plug-in contains works of others. For the full license information, please
-refer to `debian/copyright`.
+This plug-in contains works of others.
   
   
 ## 3. Documentation

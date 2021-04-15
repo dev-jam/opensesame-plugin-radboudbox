@@ -24,12 +24,12 @@ from setuptools import setup
 setup(
     # Some general metadata. By convention, a plugin is named:
     # opensesame-plugin-[plugin name]
-    name='opensesame_plugin_-_radboudbox',
+    name='opensesame-plugin-radboudbox',
     version='1.1.0',
     description='An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.',
     author='Bob Rosbag',
     author_email='b.rosbag@let.ru.nl',
-    url='https://github.com/dev-jam/opensesame_plugin_-_radboudbox',
+    url='https://github.com/dev-jam/opensesame-plugin-radboudbox',
     # Classifiers used by PyPi if you upload the plugin there
     classifiers=[
         'Intended Audience :: Science/Research',

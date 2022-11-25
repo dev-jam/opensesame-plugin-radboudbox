@@ -10,6 +10,6 @@ Package: python3-opensesame-plugin-radboudbox
 Architecture: all
 Depends: ${misc:Depends}, ${python3:Depends},
    python3-opensesame, python3-rusocsci
-Description: An OpenSesame plug-in for detecting and sending responses and audio detection with the Radboud Buttonbox.
+Description: An OpenSesame plug-in for detecting and sending responses and audio detection with the Radboud Buttonbox
  An OpenSesame plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization
  triggers with the Radboud Buttonbox to data acquisition systems.

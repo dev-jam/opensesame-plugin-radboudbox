@@ -28,16 +28,10 @@ from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
 from libopensesame.exceptions import osexception
 
-VERSION = u'2020.11-1'
+VERSION = u'2.3.0'
 
 class radboudbox_send_trigger(item):
 
-    """
-    This class handles the basic functionality of the item.
-    It does not deal with GUI stuff.
-    """
-
-    # Provide an informative description for your plug-in.
     description = u'Radboud Buttonbox: sends a trigger.'
 
     def __init__(self, name, experiment, string=None):
@@ -45,17 +39,11 @@ class radboudbox_send_trigger(item):
         item.__init__(self, name, experiment, string)
         self.verbose = u'no'
 
-
     def reset(self):
-
-        """Resets plug-in to initial values."""
 
         self.var.value = 0
 
-
     def init_var(self):
-
-        """Set en check variables."""
 
         if hasattr(self.experiment, "radboudbox_dummy_mode"):
             self.dummy_mode = self.experiment.radboudbox_dummy_mode
@@ -64,20 +52,13 @@ class radboudbox_send_trigger(item):
             raise osexception(
                     u'You should have one instance of `radboudbox_init` at the start of your experiment')
 
-
     def prepare(self):
 
-        """Preparation phase"""
-
-        # Call the parent constructor.
         item.prepare(self)
 
         self.init_var()
 
-
     def run(self):
-
-        """Run phase"""
 
         self.value = self.var.value
 
@@ -92,12 +73,7 @@ class radboudbox_send_trigger(item):
         else:
            debug.msg(u'Error with dummy mode')
 
-
     def show_message(self, message):
-        """
-        desc:
-            Show message.
-        """
 
         debug.msg(message)
         if self.verbose == u'yes':
@@ -107,8 +83,6 @@ class radboudbox_send_trigger(item):
 class qtradboudbox_send_trigger(radboudbox_send_trigger, qtautoplugin):
 
     def __init__(self, name, experiment, script=None):
-
-        """Plug-in GUI"""
 
         radboudbox_send_trigger.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)

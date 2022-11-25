@@ -2,7 +2,7 @@
 
 """
 Author: Bob Rosbag
-2020
+2022
 
 This plug-in is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,16 +28,10 @@ from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
 from libopensesame.exceptions import osexception
 
-VERSION = u'2020.11-1'
+VERSION = u'2.3.0'
 
 class radboudbox_init(item):
 
-    """
-    This class handles the basic functionality of the item.
-    It does not deal with GUI stuff.
-    """
-
-    # Provide an informative description for your plug-in.
     description = u'Radboud Buttonbox - initializes the buttonbox.'
 
     def __init__(self, name, experiment, string=None):
@@ -45,25 +39,16 @@ class radboudbox_init(item):
         item.__init__(self, name, experiment, string)
         self.verbose = u'no'
 
-
     def reset(self):
 
-        """Resets plug-in to initial values."""
-
-        # Set default experimental variables and values
         self.var.dummy_mode = u'no'
         self.var.verbose = u'no'
         self.var.id = u'autodetect'
         self.var.port = u'autodetect'
 
-        # Debugging output is only visible when OpenSesame is started with the
-        # --debug argument.
         self.show_message(u'Radboud Buttonbox plug-in has been initialized!')
 
-
     def init_var(self):
-
-        """Set en check variables."""
 
         self.dummy_mode = self.var.dummy_mode
         self.verbose = self.var.verbose
@@ -87,12 +72,8 @@ class radboudbox_init(item):
             raise osexception(
                     u'You should have only one instance of `radboudbox_init` in your experiment')
 
-
     def prepare(self):
 
-        """Preparation phase"""
-
-        # Call the parent constructor.
         item.prepare(self)
         self.close()
         self.init_var()
@@ -116,30 +97,15 @@ class radboudbox_init(item):
 
     def run(self):
 
-        """Run phase"""
-
-        # self.set_item_onset() sets the time_[item name] variable. Optionally,
-        # you can pass a timestamp, such as returned by canvas.show().
         self.set_item_onset()
 
-
     def show_message(self, message):
-        """
-        desc:
-            Show message.
-        """
 
         debug.msg(message)
         if self.verbose == u'yes':
             print(message)
 
-
     def close(self):
-
-        """
-        desc:
-            Neatly close the connection to the buttonbox.
-        """
 
         if not hasattr(self.experiment, "radboudbox") or \
             self.experiment.radboudbox is None:
@@ -157,8 +123,6 @@ class radboudbox_init(item):
 class qtradboudbox_init(radboudbox_init, qtautoplugin):
 
     def __init__(self, name, experiment, script=None):
-
-        """Plug-in GUI"""
 
         radboudbox_init.__init__(self, name, experiment, script)
         qtautoplugin.__init__(self, __file__)

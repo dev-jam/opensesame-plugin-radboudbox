@@ -2,7 +2,7 @@
 
 """
 Author: Bob Rosbag
-2020
+2022
 
 This plug-in is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,16 +28,10 @@ from libopensesame.generic_response import generic_response
 import threading
 
 
-VERSION = u'2020.11-1'
+VERSION = u'2.3.0'
 
 class radboudbox_get_buttons_start(item, generic_response):
 
-    """
-    Class handles the basic functionality of the item.
-    It does not deal with GUI stuff.
-    """
-
-    # Provide an informative description for your plug-in.
     description = u'Radboud Buttonbox: starts button registration in the background.'
 
     def __init__(self, name, experiment, string=None):
@@ -46,13 +40,7 @@ class radboudbox_get_buttons_start(item, generic_response):
         self.verbose = u'no'
         self.poll_time = 1
 
-
     def reset(self):
-
-        """
-        desc:
-            Reset item and experimental variables.
-        """
 
         self.var.timeout = u'infinite'
         self.var.flush = u'yes'
@@ -60,11 +48,7 @@ class radboudbox_get_buttons_start(item, generic_response):
         #self.var.require_state_change = u'no'
         #self.process_feedback = True
 
-
     def init_var(self):
-
-        """Set en check variables."""
-
 
         if hasattr(self.experiment, "radboudbox_dummy_mode"):
             self.dummy_mode = self.experiment.radboudbox_dummy_mode
@@ -85,13 +69,7 @@ class radboudbox_get_buttons_start(item, generic_response):
 
         self.experiment.radboudbox_get_buttons_start = 1
 
-
     def prepare(self):
-
-        """
-        desc:
-            Prepare the item.
-        """
 
         item.prepare(self)
         self.prepare_timeout()
@@ -126,11 +104,6 @@ class radboudbox_get_buttons_start(item, generic_response):
                 self._resp_func = self.experiment.radboudbox.waitButtons
 
     def run(self):
-
-        """
-        desc:
-            Runs the item.
-        """
 
         self.set_item_onset()
 
@@ -174,7 +147,6 @@ class radboudbox_get_buttons_start(item, generic_response):
             while self.stop:
                 self.clock.sleep(self.poll_time)
 
-
     def start_buttons(self):
 
         self.experiment.radboudbox_get_buttons_thread_running = 1
@@ -197,39 +169,17 @@ class radboudbox_get_buttons_start(item, generic_response):
         self.experiment.radboudbox_get_buttons_locked = 0
 
     def show_message(self, message):
-        """
-        desc:
-            Show message.
-        """
 
         debug.msg(message)
         if self.verbose == u'yes':
             print(message)
 
-
     def var_info(self):
-
-        """
-        returns:
-            A list of (name, description) tuples with variable descriptions.
-        """
 
         return item.var_info(self) + \
             generic_response.var_info(self)
 
-
     def set_response_time(self, time=None):
-
-        """
-        desc:
-            Set a timestamp for the onset time of the item's execution.
-
-        keywords:
-            time:    A timestamp or None to use the current time.
-
-        returns:
-            desc:    A timestamp.
-        """
 
         if time is None:
             time = self.clock.time()

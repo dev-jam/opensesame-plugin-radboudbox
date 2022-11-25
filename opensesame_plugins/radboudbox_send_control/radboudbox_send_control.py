@@ -2,7 +2,7 @@
 
 """
 Author: Bob Rosbag
-2020
+2022
 
 This plug-in is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
 from libopensesame.exceptions import osexception
 
-VERSION = u'2020.11-1'
+VERSION = u'2.3.0'
 
 CMD_DICT = {u'Calibrate Sound': [u'C',u'S'],
             u'Calibrate Voice': [u'C',u'V'],
@@ -57,12 +57,6 @@ PAUSE = 2000
 
 class radboudbox_send_control(item):
 
-    """
-    This class handles the basic functionality of the item.
-    It does not deal with GUI stuff.
-    """
-
-    # Provide an informative description for your plug-in.
     description = u'Radboud Buttonbox: sends a control command to the buttonbox.'
 
     def __init__(self, name, experiment, string=None):
@@ -70,16 +64,11 @@ class radboudbox_send_control(item):
         item.__init__(self, name, experiment, string)
         self.verbose = u'no'
 
-
     def reset(self):
-
-        """Resets plug-in to initial values."""
 
         pass
 
     def init_var(self):
-
-        """Set en check variables."""
 
         if hasattr(self.experiment, "radboudbox_dummy_mode"):
             self.dummy_mode = self.experiment.radboudbox_dummy_mode
@@ -91,20 +80,13 @@ class radboudbox_send_control(item):
         self.command = self.var.command
         self.cmd = CMD_DICT[self.command]
 
-
     def prepare(self):
 
-        """Preparation phase"""
-
-        # Call the parent constructor.
         item.prepare(self)
 
         self.init_var()
 
-
     def run(self):
-
-        """Run phase"""
 
         if not isinstance(self.cmd, list):
             self.cmd = list(self.cmd)
@@ -125,12 +107,7 @@ class radboudbox_send_control(item):
                 self.clock.sleep(PAUSE)
                 self.show_message(u'Sound/voice calibration done!')
 
-
     def show_message(self, message):
-        """
-        desc:
-            Show message.
-        """
 
         debug.msg(message)
         if self.verbose == u'yes':

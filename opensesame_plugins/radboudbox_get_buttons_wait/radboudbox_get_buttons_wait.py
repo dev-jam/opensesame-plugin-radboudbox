@@ -2,7 +2,7 @@
 
 """
 Author: Bob Rosbag
-2020
+2022
 
 This plug-in is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,16 +26,10 @@ from libopensesame.py3compat import *
 from libopensesame.item import item
 
 
-VERSION = u'2020.11-1'
+VERSION = u'2.3.0'
 
 class radboudbox_get_buttons_wait(item):
 
-    """
-    Class handles the basic functionality of the item.
-    It does not deal with GUI stuff.
-    """
-
-    # Provide an informative description for your plug-in.
     description = u'Radboud Buttonbox: waits until the background button registration has finished.'
 
     def __init__(self, name, experiment, string=None):
@@ -44,16 +38,11 @@ class radboudbox_get_buttons_wait(item):
         self.verbose = u'no'
         self.poll_time = 10
 
-
     def reset(self):
 
-        """Resets plug-in to initial values."""
         pass
 
-
     def init_var(self):
-
-        """Set en check variables."""
 
         if hasattr(self.experiment, "radboudbox_dummy_mode"):
             self.dummy_mode = self.experiment.radboudbox_dummy_mode
@@ -64,13 +53,7 @@ class radboudbox_get_buttons_wait(item):
 
         self.experiment.radboudbox_get_buttons_wait = 1
 
-
     def prepare(self):
-
-        """
-        desc:
-            Prepare the item.
-        """
 
         item.prepare(self)
         #self.prepare_timeout()
@@ -80,10 +63,7 @@ class radboudbox_get_buttons_wait(item):
 
         self.init_var()
 
-
     def run(self):
-
-        """Run phase"""
 
         self.set_item_onset()
 
@@ -109,12 +89,7 @@ class radboudbox_get_buttons_wait(item):
         else:
             self.show_message(u'Error with dummy mode!')
 
-
     def show_message(self, message):
-        """
-        desc:
-            Show message.
-        """
 
         debug.msg(message)
         if self.verbose == u'yes':

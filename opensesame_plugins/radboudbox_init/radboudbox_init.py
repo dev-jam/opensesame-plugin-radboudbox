@@ -28,7 +28,7 @@ from libopensesame.item import item
 from libqtopensesame.items.qtautoplugin import qtautoplugin
 from libopensesame.exceptions import osexception
 
-VERSION = u'2.3.0'
+VERSION = u'2.4.0'
 
 class radboudbox_init(item):
 
@@ -87,7 +87,6 @@ class radboudbox_init(item):
                 self.experiment.radboudbox = buttonbox.Buttonbox(id=self.id, port=self.port)
                 self.clock.sleep(4000)
                 self.experiment.cleanup_functions.append(self.close)
-                self.python_workspace[u'radboudbox'] = self.experiment.radboudbox
             except OSError:
                     debug.msg(u'Could not access the Radboud Buttonbox')
         elif self.dummy_mode == u'yes':

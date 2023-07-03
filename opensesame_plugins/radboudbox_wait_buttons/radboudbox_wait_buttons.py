@@ -26,7 +26,7 @@ from libopensesame.py3compat import *
 from libopensesame.item import item
 from libopensesame.generic_response import generic_response
 
-VERSION = u'2.3.0'
+VERSION = u'2.4.0'
 
 class radboudbox_wait_buttons(item, generic_response):
 

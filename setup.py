@@ -32,7 +32,7 @@ def get_readme():
 
 setup(
     name='opensesame-plugin-radboudbox',
-    version='2.3.0',
+    version='2.4.0',
     description='An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.',
     long_description=get_readme(),
     long_description_content_type='text/markdown',

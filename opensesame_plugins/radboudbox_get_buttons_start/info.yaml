@@ -1,5 +1,5 @@
 description: Radboud Buttonbox - starts button registration in the background.
-version: 2.3.0
+version: 2.4.0
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
@@ -33,5 +33,5 @@ controls:
     type: text
 -
     label:  |
-      <small>Radboud Buttonbox version 2.3.0</small>
+      <small>Radboud Buttonbox version 2.4.0</small>
     type: "text"

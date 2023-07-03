@@ -28,7 +28,7 @@ from libopensesame.generic_response import generic_response
 import threading
 
 
-VERSION = u'2.3.0'
+VERSION = u'2.4.0'
 
 class radboudbox_get_buttons_start(item, generic_response):
 

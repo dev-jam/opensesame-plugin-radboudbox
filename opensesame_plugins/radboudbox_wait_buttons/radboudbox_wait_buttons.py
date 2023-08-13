@@ -93,11 +93,11 @@ class radboudbox_wait_buttons(item, generic_response):
             else:
                 self._timeout = float(self.timeout) / 1000
 
-        # Prepare auto response
-        if self.experiment.auto_response:
-            self._resp_func = self.auto_responder
-        else:
-            self._resp_func = self.experiment.radboudbox.waitButtons
+            # Prepare auto response
+            if self.experiment.auto_response:
+                self._resp_func = self.auto_responder
+            else:
+                self._resp_func = self.experiment.radboudbox.waitButtons
 
     def run(self):
 

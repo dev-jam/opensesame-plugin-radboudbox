@@ -1,5 +1,5 @@
 description: Radboud Buttonbox - waits until the background button registration has finished.
-version: 2.4.0
+version: 2.5.0
 author: "Bob Rosbag"
 url: "http://osdoc.cogsci.nl/"
 category: "RadboudBox"
@@ -11,5 +11,5 @@ controls:
     type: text
 -
     label:  |
-      <small>Radboud Buttonbox version 2.4.0</small>
+      <small>Radboud Buttonbox version 2.5.0</small>
     type: "text"

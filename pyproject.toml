@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "opensesame-plugin-radboudbox"
+version = "3.0.0"
+description = "An OpenSesame Plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems"
+authors = ["Bob Rosbag <debian@bobrosbag.nl>"]
+readme = "README.md"
+packages = [
+    {include = "opensesame_plugins"},
+]
+license = "LICENSE.md"
+homepage = "https://github.com/dev-jam/opensesame-plugin-radboudbox"
+repository = "https://github.com/dev-jam/opensesame-plugin-radboudbox"
+
+[tool.poetry.dependencies]
+python = ">= 3.7"
+opensesame-core = ">= 4.0.0a0"
+rusocsci = ">= 0.9.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

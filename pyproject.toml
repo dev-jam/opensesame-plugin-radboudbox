@@ -12,8 +12,6 @@ homepage = "https://github.com/dev-jam/opensesame-plugin-radboudbox"
 repository = "https://github.com/dev-jam/opensesame-plugin-radboudbox"
 
 [tool.poetry.dependencies]
-python = ">= 3.7"
-opensesame-core = ">= 4.0.0a0"
 rusocsci = ">= 0.9.2"
 
 [build-system]

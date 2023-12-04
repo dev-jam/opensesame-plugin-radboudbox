@@ -84,8 +84,9 @@ class RadboudboxInit(Item):
         self.experiment.radboudbox_dummy_mode = self.var.dummy_mode
         self.experiment.radboudbox_verbose = self.var.verbose
         self.experiment.radboudbox_get_buttons_locked = 0
-        self.experiment.radboudbox_get_buttons_wait = None
-        self.experiment.radboudbox_get_buttons_start = None
+        self.experiment.radboudbox_get_buttons = None
+        #self.experiment.radboudbox_get_buttons_wait = None
+        #self.experiment.radboudbox_get_buttons_start = None
 
         if self.var.id == 'autodetect':
             self.id = 0

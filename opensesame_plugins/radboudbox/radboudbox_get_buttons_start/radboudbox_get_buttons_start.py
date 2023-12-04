@@ -45,6 +45,7 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
         while self.experiment.radboudbox_get_buttons_locked:
             self.clock.sleep(POLL_TIME)
         self.experiment.radboudbox_get_buttons_locked = 1
+        self.experiment.radboudbox_get_buttons = True
         self._show_message('Start collecting buttons')
         self.experiment.radboudbox_get_buttons_thread = threading.Thread(target=self._start_buttons)
         self.experiment.radboudbox_get_buttons_thread.start()
@@ -95,7 +96,7 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
             else:
                 self._timeout = float(self._timeout) / 1000
         self._t0 = None
-        self.experiment.radboudbox_get_buttons_start = 1
+        self.experiment.radboudbox_get_buttons_start = True
 
     def _check_init(self):
         if not hasattr(self.experiment, 'radboudbox_dummy_mode'):
@@ -103,7 +104,12 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
 
     def _check_wait(self):
         if not hasattr(self.experiment, "radboudbox_get_buttons_wait"):
-            raise OSException('Radboudbox Get Buttons Wait item is missing')
+            raise OSException(
+                    '`Radboudbox Get Buttons Wait` item is missing')
+        else:
+            if self.experiment.radboudbox_get_buttons:
+                raise OSException(
+                        'Radboudbox already waiting for a button, you first have to stop the buttonbox before starting')
 
     def _show_message(self, message):
         oslogger.debug(message)

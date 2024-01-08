@@ -12,7 +12,7 @@ homepage = "https://github.com/dev-jam/opensesame-plugin-radboudbox"
 repository = "https://github.com/dev-jam/opensesame-plugin-radboudbox"
 
 [tool.poetry.dependencies]
-rusocsci = ">= 0.9.2"
+rusocsci = "*"
 
 [build-system]
 requires = ["poetry-core"]

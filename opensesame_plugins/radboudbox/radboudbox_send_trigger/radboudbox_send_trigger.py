@@ -36,18 +36,27 @@ class RadboudboxSendTrigger(Item):
         self._init_var()
 
     def run(self):
+        if isinstance(self.var.value, int):
+            if self.var.value >= 0 and self.var.value <= 255:
+                self.value = int(self.var.value)
+            else:
+                raise OSException('Trigger value should be between 0 and 255')
+        else:
+            raise OSException('Trigger value should be a integer')
+
         if self.dummy_mode == 'no':
             self.set_item_onset()
-            self.experiment.radboudbox.sendMarker(val=self.var.value)
-            self._show_message('Sending value %s to the Radboud Buttonbox' % self.var.value)
+            self._show_message('Sending trigger value %s' % self.value)
+            self.experiment.radboudbox.sendMarker(val=self.value)
         elif self.dummy_mode == 'yes':
-            self._show_message('Dummy mode enabled, NOT sending value %s to the Radboud Buttonbox' % self.var.value)
+            self._show_message('Dummy mode enabled, NOT sending value %s' % self.value)
         else:
             self._show_message('Error with dummy mode')
 
     def _init_var(self):
         self.dummy_mode = self.experiment.radboudbox_dummy_mode
         self.verbose = self.experiment.radboudbox_verbose
+        self.extended_mode = self.experiment.radboudbox_extended_mode
 
     def _check_init(self):
         if not hasattr(self.experiment, 'radboudbox_dummy_mode'):
@@ -64,3 +73,9 @@ class QtRadboudboxSendTrigger(RadboudboxSendTrigger, QtAutoPlugin):
     def __init__(self, name, experiment, script=None):
         RadboudboxSendTrigger.__init__(self, name, experiment, script)
         QtAutoPlugin.__init__(self, __file__)
+
+    # def init_edit_widget(self):
+    #     super().init_edit_widget()
+    #     self.line_edit_pulse_time.setEnabled(self.checkbox_pulse_mode.isChecked())
+    #     self.checkbox_pulse_mode.stateChanged.connect(
+    #         self.line_edit_pulse_time.setEnabled)

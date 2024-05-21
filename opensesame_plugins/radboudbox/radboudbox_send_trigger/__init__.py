@@ -11,6 +11,18 @@ controls = [
         "name": "line_edit_value",
         "tooltip": "Value"
     }, {
+    #     "type": "checkbox",
+    #     "var": "pulse_mode",
+    #     "label": "Enable Pulse Mode",
+    #     "name": "checkbox_pulse_mode",
+    #     "tooltip": "Pulse mode"
+    # }, {
+    #     "type": "line_edit",
+    #     "var": "pulse_time",
+    #     "label": "Pulse Time",
+    #     "name": "line_edit_pulse_time",
+    #     "tooltip": "Pulse Time"
+    # }, {
         "type": "text",
         "label": "<small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>"
     }, {

@@ -29,6 +29,12 @@ controls = [
         "name": "line_edit_port",
         "tooltip": "Expecting a valid port device name or autodetect."
     }, {
+        "type": "checkbox",
+        "var": "extended_mode",
+        "label": "Bitsi Extended Mode",
+        "name": "checkbox_extended",
+        "tooltip": "Buttonbox extended mode"
+    }, {
         "type": "text",
         "label": "<small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>"
     }, {

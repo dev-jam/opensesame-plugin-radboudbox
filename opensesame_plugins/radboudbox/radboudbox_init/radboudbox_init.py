@@ -32,6 +32,7 @@ class RadboudboxInit(Item):
         self.var.verbose = 'yes'
         self.var.id = 'autodetect'
         self.var.port = 'autodetect'
+        self.var.extended_mode = 'yes'
 
     def prepare(self):
         super().prepare()
@@ -43,11 +44,16 @@ class RadboudboxInit(Item):
         if self.dummy_mode == 'no':
             try:
                 from rusocsci import buttonbox
+                from rusocsci import extended
             except ImportError:
                 self._show_message('The RuSocSci package could not be imported. Please install package.')
             try:
-                self.experiment.radboudbox = buttonbox.Buttonbox(id=self.id,
-                                                                 port=self.port)
+                if self.var.extended_mode == 'no':
+                    self.experiment.radboudbox = buttonbox.Buttonbox(id=self.id,
+                                                                     port=self.port)
+                elif self.var.extended_mode == 'yes':
+                    self.experiment.radboudbox = extended.Extended(id=self.id,
+                                                                     port=self.port)
                 self.clock.sleep(4000)
                 self.experiment.cleanup_functions.append(self.close)
                 # self.python_workspace['radboudbox'] = self.experiment.radboudbox
@@ -81,6 +87,7 @@ class RadboudboxInit(Item):
     def _init_var(self):
         self.dummy_mode = self.var.dummy_mode
         self.verbose = self.var.verbose
+        self.experiment.radboudbox_extended_mode = self.var.extended_mode
         self.experiment.radboudbox_dummy_mode = self.var.dummy_mode
         self.experiment.radboudbox_verbose = self.var.verbose
         self.experiment.radboudbox_get_buttons_locked = 0

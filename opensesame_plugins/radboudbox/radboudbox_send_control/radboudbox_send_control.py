@@ -28,12 +28,12 @@ CMD_DICT = {'Calibrate Sound': ['C', 'S'],
             'Calibrate Voice': ['C', 'V'],
             'Detect Sound': ['D', 'S'],
             'Detect Voice': ['D', 'V'],
-            'Marker Out': 'M',
-            'Pulse Out': 'P',
-            'Pulse Time': 'X',
-            'Analog Out 1': 'Y',
-            'Analog Out 2': 'Z',
-            'Tone': 'T',
+            'Marker Out': ['M'],
+            'Pulse Out': ['P'],
+            'Pulse Time': ['X'],
+            'Analog Out 1': ['Y'],
+            'Analog Out 2': ['Z'],
+            'Tone': ['T'],
             'Analog In 1': ['A', '1'],
             'Analog In 2': ['A', '2'],
             'Analog In 3': ['A', '3'],
@@ -47,10 +47,16 @@ PAUSE_LIST = ['Calibrate Sound', 'Calibrate Voice']
 
 FLUSH_LIST = ['Detect Sound', 'Detect Voice']
 
+VALUE_LIST = ['Marker Out', 'Pulse Out', 'Pulse Time', 'Analog Out 1', 'Analog Out 2', 'Tone']
+
 PAUSE = 2000
 
 
 class RadboudboxSendControl(Item):
+
+    def reset(self):
+        self.var.command = ''
+        self.var.command_value = ''
 
     def prepare(self):
         super().prepare()
@@ -60,17 +66,24 @@ class RadboudboxSendControl(Item):
     def run(self):
         if not isinstance(self.cmd, list):
             self.cmd = list(self.cmd)
-            self.cmd.append(self.var.command)
 
-        self.set_item_onset()
+        if self.command in VALUE_LIST:
+            if isinstance(self.var.command_value,int):
+                self.cmd.append(str(self.var.command_value))
+            else:
+                raise OSException('Value should be an integer')
+
         if self.dummy_mode == 'no':
             if self.command in FLUSH_LIST:
                 self._show_message('Flushing events')
                 self.experiment.radboudbox.clearEvents()
 
+            self.set_item_onset()
+
+            #self._show_message('Sending command: %s' % (''.join(self.cmd)))
+            self._show_message('Sending command: %s' % self.cmd)
             self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[0])))
             self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[1])))
-            self._show_message('Sending command: %s' % (''.join(self.cmd)))
 
             if self.command in PAUSE_LIST:
                 self._show_message('Sound/voice calibration for %d ms' % (PAUSE))

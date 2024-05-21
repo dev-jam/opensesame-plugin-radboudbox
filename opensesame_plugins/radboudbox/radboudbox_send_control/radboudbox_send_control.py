@@ -41,7 +41,7 @@ CMD_DICT = {'Calibrate Sound': ['C', 'S'],
             'LEDs Off': ['L', 'X'],
             'LEDs Input': ['L', 'I'],
             'LEDs Output': ['L', 'O']
-                    }
+            }
 
 PAUSE_LIST = ['Calibrate Sound', 'Calibrate Voice']
 
@@ -49,7 +49,7 @@ FLUSH_LIST = ['Detect Sound', 'Detect Voice']
 
 VALUE_LIST = ['Marker Out', 'Pulse Out', 'Pulse Time', 'Analog Out 1', 'Analog Out 2', 'Tone']
 
-PAUSE = 2000
+PAUSE = 1000
 
 
 class RadboudboxSendControl(Item):
@@ -61,15 +61,17 @@ class RadboudboxSendControl(Item):
     def prepare(self):
         super().prepare()
         self._check_init()
+        self._check_extended()
         self._init_var()
 
     def run(self):
-        if not isinstance(self.cmd, list):
-            self.cmd = list(self.cmd)
-
         if self.command in VALUE_LIST:
             if isinstance(self.var.command_value,int):
-                self.cmd.append(str(self.var.command_value))
+                if self.var.command_value >= 0 and self.var.command_value <= 255:
+                    self.command_list.append(str(self.var.command_value))
+                    self.value_list.append(self.var.command_value)
+                else:
+                    raise OSException('Value should be between 0 and 255')
             else:
                 raise OSException('Value should be an integer')
 
@@ -79,27 +81,34 @@ class RadboudboxSendControl(Item):
                 self.experiment.radboudbox.clearEvents()
 
             self.set_item_onset()
+            self._show_message('Sending command: %s' % self.command_list)
 
-            #self._show_message('Sending command: %s' % (''.join(self.cmd)))
-            self._show_message('Sending command: %s' % self.cmd)
-            self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[0])))
-            self.experiment.radboudbox.sendMarker(val=(ord(self.cmd[1])))
+            for value in self.value_list:
+                self.experiment.radboudbox.send(value)
 
             if self.command in PAUSE_LIST:
                 self._show_message('Sound/voice calibration for %d ms' % (PAUSE))
                 self.clock.sleep(PAUSE)
                 self._show_message('Sound/voice calibration done!')
+        elif self.dummy_mode == 'yes':
+            self.set_item_onset()
+            self._show_message('Sending command: %s' % self.command_list)
 
     def _init_var(self):
         self.dummy_mode = self.experiment.radboudbox_dummy_mode
         self.verbose = self.experiment.radboudbox_verbose
         self.command = self.var.command
-        self.cmd = CMD_DICT[self.command]
+        self.command_list = list(CMD_DICT[self.command])
+        self.value_list = [ord(item) for item in self.command_list]
 
     def _check_init(self):
         if not hasattr(self.experiment, 'radboudbox_dummy_mode'):
             raise OSException(
                 'You should have one instance of `radboudbox_init` at the start of your experiment')
+
+    def _check_extended(self):
+        if self.experiment.radboudbox_extended_mode == 'no':
+            raise OSException('`Send control item only works in Bitsi extended mode')
 
     def _show_message(self, message):
         oslogger.debug(message)
@@ -112,4 +121,30 @@ class QtRadboudboxSendControl(RadboudboxSendControl, QtAutoPlugin):
     def __init__(self, name, experiment, script=None):
         RadboudboxSendControl.__init__(self, name, experiment, script)
         QtAutoPlugin.__init__(self, __file__)
+
+    def init_edit_widget(self):
+        super().init_edit_widget()
+
+    def apply_edit_changes(self):
+        if not QtAutoPlugin.apply_edit_changes(self) or self.lock:
+            return False
+        self.custom_interactions()
+        return True
+
+    def edit_widget(self):
+        if self.lock:
+            return
+        self.lock = True
+        w = QtAutoPlugin.edit_widget(self)
+        self.custom_interactions()
+        self.lock = False
+        return w
+
+    def custom_interactions(self):
+        if self.var.command in VALUE_LIST:
+            self.line_edit_command_value.setEnabled(True)
+        else:
+            self.line_edit_command_value.setDisabled(True)
+
+
 

@@ -27,6 +27,6 @@ controls = [
         "label": "<small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>"
     }, {
         "type": "text",
-        "label": "<small>Radboud Buttonbox version 3.1.1</small>"
+        "label": "<small>Radboud Buttonbox version 4.0.0</small>"
     }
 ]

@@ -46,6 +46,7 @@ Final release for OpenSesame 3 API
 - First release
 
 [Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/3.1.0...HEAD
+[4.0.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/3.1.0...4.0.0
 [3.1.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/3.0.1...3.1.0
 [3.0.1]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/3.0.0...3.0.1
 [3.0.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/2.5.0...3.0.0

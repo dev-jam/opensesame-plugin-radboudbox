@@ -29,6 +29,8 @@ class RadboudboxSendTrigger(Item):
 
     def reset(self):
         self.var.value = 0
+        self.var.pulse_mode = 'no'
+        self.var.pulse_time = 50
 
     def prepare(self):
         super().prepare()
@@ -44,10 +46,23 @@ class RadboudboxSendTrigger(Item):
         else:
             raise OSException('Trigger value should be a integer')
 
+        if self.pulse_mode == 'yes':
+            if isinstance(self.var.pulse_time, int):
+                if self.var.pulse_time >= 0:
+                    self.pulse_time = int(self.var.pulse_time)
+                else:
+                    raise OSException('Trigger value should be equal to or larger than 0')
+            else:
+                raise OSException('Trigger value should be a integer')
+
         if self.dummy_mode == 'no':
             self.set_item_onset()
             self._show_message('Sending trigger value %s' % self.value)
             self.experiment.radboudbox.sendMarker(val=self.value)
+            if self.pulse_mode == 'yes':
+                self.clock.sleep(self.pulse_time)
+                self.experiment.radboudbox.sendMarker(val=0)
+
         elif self.dummy_mode == 'yes':
             self._show_message('Dummy mode enabled, NOT sending value %s' % self.value)
         else:
@@ -57,6 +72,7 @@ class RadboudboxSendTrigger(Item):
         self.dummy_mode = self.experiment.radboudbox_dummy_mode
         self.verbose = self.experiment.radboudbox_verbose
         self.extended_mode = self.experiment.radboudbox_extended_mode
+        self.pulse_mode = self.var.pulse_mode
 
     def _check_init(self):
         if not hasattr(self.experiment, 'radboudbox_dummy_mode'):
@@ -74,8 +90,8 @@ class QtRadboudboxSendTrigger(RadboudboxSendTrigger, QtAutoPlugin):
         RadboudboxSendTrigger.__init__(self, name, experiment, script)
         QtAutoPlugin.__init__(self, __file__)
 
-    # def init_edit_widget(self):
-    #     super().init_edit_widget()
-    #     self.line_edit_pulse_time.setEnabled(self.checkbox_pulse_mode.isChecked())
-    #     self.checkbox_pulse_mode.stateChanged.connect(
-    #         self.line_edit_pulse_time.setEnabled)
+    def init_edit_widget(self):
+        super().init_edit_widget()
+        self.line_edit_pulse_time.setEnabled(self.checkbox_pulse_mode.isChecked())
+        self.checkbox_pulse_mode.stateChanged.connect(
+            self.line_edit_pulse_time.setEnabled)

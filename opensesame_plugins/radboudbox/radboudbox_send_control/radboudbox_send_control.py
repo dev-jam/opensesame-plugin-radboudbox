@@ -47,7 +47,7 @@ PAUSE_LIST = ['Calibrate Sound', 'Calibrate Voice']
 
 FLUSH_LIST = ['Detect Sound', 'Detect Voice']
 
-VALUE_LIST = ['Marker Out', 'Pulse Out', 'Pulse Time', 'Analog Out 1', 'Analog Out 2']
+VALUE_LIST = ['Marker Out', 'Pulse Out', 'Pulse Time', 'Analog Out 1', 'Analog Out 2', 'Tone']
 
 PAUSE = 1000
 

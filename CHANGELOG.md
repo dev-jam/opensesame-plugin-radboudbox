@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     
 ## [4.1.1] - 2024-06-03
 
- - add 1 ms pause after start thread to compensate for initialization of buttonbox
+- add 1 ms pause after start thread to compensate for initialization of buttonbox
     
 ## [4.1.0] - 2024-05-24
 

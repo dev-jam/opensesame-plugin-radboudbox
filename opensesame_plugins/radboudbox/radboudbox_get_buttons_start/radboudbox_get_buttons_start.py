@@ -51,6 +51,7 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
         self.experiment.radboudbox_get_buttons_thread.start()
         while self.stop:
             self.clock.sleep(POLL_TIME)
+        self.clock.sleep(1)
 
     def prepare_response_func(self):
         self._keyboard = Keyboard(self.experiment,

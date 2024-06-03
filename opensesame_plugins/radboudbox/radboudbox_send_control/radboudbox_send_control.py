@@ -108,7 +108,7 @@ class RadboudboxSendControl(Item):
 
     def _check_extended(self):
         if self.experiment.radboudbox_extended_mode == 'no':
-            raise OSException('`Send control item only works in Bitsi extended mode')
+            raise OSException('`radboudbox_send_control` item only works in Bitsi extended mode')
 
     def _show_message(self, message):
         oslogger.debug(message)

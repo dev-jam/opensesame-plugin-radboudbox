@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
-    
+
+## [4.2.0] - 2025-07-17
+
+- license cleanup
+
 ## [4.1.1] - 2024-06-03
 
 - add 1 ms pause after start thread to compensate for initialization of buttonbox
@@ -53,7 +57,8 @@ Final release for OpenSesame 3 API
 
 - First release
 
-[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.1.1...HEAD
+[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.2.0...HEAD
+[4.2.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.1.1...4.2.0
 [4.1.1]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.1.0...4.1.1
 [4.1.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.0.0...4.1.0
 [4.0.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/3.1.0...4.0.0

@@ -31,39 +31,46 @@ class RadboudboxWaitButtons(BaseResponseItem):
     def reset(self):
         self.var.timeout = 'infinite'
 
+    def prepare_response_func(self):
+        self._keyboard = Keyboard(self.experiment,
+                                  keylist=self._allowed_responses,
+                                  timeout=self._timeout)
+        if self.dummy_mode == 'yes':
+            return self._keyboard.get_key
+
+    def process_response(self, response_args):
+        response, t1 = response_args
+        if not response:
+            response = 'NA'
+        elif isinstance(response, list):
+            response = response[0]
+        super().process_response((safe_decode(response), t1))
+        response_time = round(t1 - self._t0, 1)
+        self._show_message("Detected press on button: '%s'" % response)
+        self._show_message("Response time: %s ms" % response_time)
+
     def prepare(self):
-        super().prepare()
         self._check_init()
         self._init_var()
+        super().prepare()
 
     def run(self):
         self._show_message('Start collecting buttons')
         self._start_buttons()
 
-    def prepare_response_func(self):
-        self._keyboard = Keyboard(self.experiment,
-                                  keylist=self._allowed_responses,
-                                  timeout=self._timeout)
-        if self.experiment.radboudbox_dummy_mode == 'yes':
-            return self._keyboard.get_key
-
     def _start_buttons(self):
         if self.dummy_mode == 'no':
+            if self._timeout == 'infinite' or self._timeout == None:
+                self._timeout = float("inf")
+            else:
+                self._timeout = float(self._timeout) / 1000
+            
             self._t0 = self.set_item_onset()
-            resp = self.experiment.radboudbox.waitButtons(maxWait=self._timeout,
+            response = self.experiment.radboudbox.waitButtons(maxWait=self._timeout,
                                                           buttonList=self._allowed_responses,
                                                           flush=self.flush)
-            t1 = self.clock.time()
-            self._set_response_time()
-            if not resp:
-                resp = 'NA'
-            elif isinstance(resp, list):
-                resp = resp[0]
-            retval = resp, t1
-            response_time = round(t1 - self._t0, 1)
-            self.process_response(retval)
-            self._show_message("Detected press on button: '%s'" % resp)
-            self._show_message("Response time: %s ms" % response_time)
+            t1 = self._set_response_time()
+            self.process_response((response, t1))
         else:
             self._keyboard.flush()
             super().run()
@@ -73,12 +80,6 @@ class RadboudboxWaitButtons(BaseResponseItem):
         self.dummy_mode = self.experiment.radboudbox_dummy_mode
         self.verbose = self.experiment.radboudbox_verbose
         self.flush = True
-        if self.dummy_mode == 'no':
-            if self._timeout == 'infinite' or self._timeout == None:
-                self._timeout = float("inf")
-            else:
-                self._timeout = float(self._timeout) / 1000
-        self._t0 = None
 
     def _check_init(self):
         if not hasattr(self.experiment, 'radboudbox_dummy_mode'):

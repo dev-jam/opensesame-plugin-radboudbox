@@ -46,8 +46,8 @@ class RadboudboxWaitButtons(BaseResponseItem):
             response = response[0]
         super().process_response((safe_decode(response), t1))
         response_time = round(t1 - self._t0, 1)
-        self._show_message("Detected press on button: '%s'" % response)
-        self._show_message("Response time: %s ms" % response_time)
+        self._show_message(f"Detected press on button: '{response}'")
+        self._show_message(f"Response time: {response_time} ms")
 
     def prepare(self):
         self._check_init()
@@ -93,7 +93,7 @@ class RadboudboxWaitButtons(BaseResponseItem):
     def _set_response_time(self, time=None):
         if time is None:
             time = self.clock.time()
-        self.experiment.var.set('time_response_%s' % self.name, time)
+        self.experiment.var.set(f'time_response_{self.name}', time)
         return time
 
 

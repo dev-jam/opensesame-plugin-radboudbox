@@ -81,18 +81,18 @@ class RadboudboxSendControl(Item):
                 self.experiment.radboudbox.clearEvents()
 
             self.set_item_onset()
-            self._show_message('Sending command: %s' % self.command_list)
+            self._show_message(f'Sending command: {self.command_list}')
 
             for value in self.value_list:
                 self.experiment.radboudbox.send(value)
 
             if self.command in PAUSE_LIST:
-                self._show_message('Sound/voice calibration for %d ms' % (PAUSE))
+                self._show_message(f'Sound/voice calibration for {PAUSE} ms')
                 self.clock.sleep(PAUSE)
                 self._show_message('Sound/voice calibration done!')
         elif self.dummy_mode == 'yes':
             self.set_item_onset()
-            self._show_message('Sending command: %s' % self.command_list)
+            self._show_message(f'Sending command: {self.command_list}')
 
     def _init_var(self):
         self.dummy_mode = self.experiment.radboudbox_dummy_mode

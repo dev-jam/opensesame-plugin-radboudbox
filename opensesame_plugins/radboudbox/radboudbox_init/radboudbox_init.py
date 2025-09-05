@@ -62,7 +62,7 @@ class RadboudboxInit(Item):
         elif self.dummy_mode == 'yes':
             self._show_message('Dummy mode enabled, prepare phase')
         else:
-            self._show_message('Error with dummy mode, dummy mode: %s' % self.dummy_mode)
+            self._show_message(f'Error with dummy mode, dummy mode: {self.dummy_mode}')
 
     def run(self):
         self.set_item_onset()

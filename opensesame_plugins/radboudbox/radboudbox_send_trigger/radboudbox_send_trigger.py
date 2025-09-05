@@ -57,14 +57,14 @@ class RadboudboxSendTrigger(Item):
 
         if self.dummy_mode == 'no':
             self.set_item_onset()
-            self._show_message('Sending trigger value %s' % self.value)
+            self._show_message(f'Sending trigger value {self.value}')
             self.experiment.radboudbox.sendMarker(val=self.value)
             if self.pulse_mode == 'yes':
                 self.clock.sleep(self.pulse_time)
                 self.experiment.radboudbox.sendMarker(val=0)
 
         elif self.dummy_mode == 'yes':
-            self._show_message('Dummy mode enabled, NOT sending value %s' % self.value)
+            self._show_message(f'Dummy mode enabled, NOT sending value {self.value}')
         else:
             self._show_message('Error with dummy mode')
 

@@ -59,38 +59,40 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
 
     def run(self):
         self._check_wait()
+        self._t0 = self.set_item_onset()
         self.stop = 1
-        while self.experiment.radboudbox_get_buttons_locked:
-            self.clock.sleep(POLL_TIME)
-        self.experiment.radboudbox_get_buttons_locked = 1
-        self.experiment.radboudbox_get_buttons = True
-        self._show_message('Start collecting buttons')
-        self.experiment.radboudbox_get_buttons_thread = threading.Thread(target=self._start_buttons)
-        self.experiment.radboudbox_get_buttons_thread.start()
-        while self.stop:
-            self.clock.sleep(POLL_TIME)
-        self.clock.sleep(1)
-
-    def _start_buttons(self):
-        self.experiment.radboudbox_get_buttons_thread_running = 1
-        self.stop = 0
 
         if self.dummy_mode == 'no':
             if self._timeout == 'infinite' or self._timeout == None:
                 self._timeout = float("inf")
             else:
                 self._timeout = float(self._timeout) / 1000
-            
-            self._t0 = self.set_item_onset()
-            response = self.experiment.radboudbox.waitButtons(maxWait=self._timeout,
-                                                          buttonList=self._allowed_responses,
-                                                          flush=self.flush)
-            t1 = self._set_response_time()
-            self.process_response((response, t1))
+            while self.experiment.radboudbox_get_buttons_locked:
+                self.clock.sleep(POLL_TIME)
+
+            self.experiment.radboudbox_get_buttons_locked = 1
+            self.experiment.radboudbox_get_buttons = True
+            self._show_message('Start collecting buttons')
+            self.experiment.radboudbox_get_buttons_thread = threading.Thread(target=self._start_buttons)
+            self.experiment.radboudbox_get_buttons_thread.start()
+            while self.stop:
+                self.clock.sleep(POLL_TIME)
+            self.clock.sleep(1)
         else:
+            self._show_message('Dummy mode on, using keyboard')
             self._keyboard.flush()
             super().run()
             self._set_response_time()
+
+    def _start_buttons(self):
+        self.experiment.radboudbox_get_buttons_thread_running = 1
+        self.stop = 0
+
+        response = self.experiment.radboudbox.waitButtons(maxWait=self._timeout,
+                                                      buttonList=self._allowed_responses,
+                                                      flush=self.flush)
+        t1 = self._set_response_time()
+        self.process_response((response, t1))
 
         self.experiment.radboudbox_get_buttons_locked = 0
 

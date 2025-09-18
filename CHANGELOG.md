@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 
+## [4.5.0] - 2025-09-19
+
+- reorganization of code to make it more robust
+
 ## [4.4.0] - 2025-09-05
 
 - convert string handling to f-strings
@@ -66,7 +70,8 @@ Final release for OpenSesame 3 API
 
 - First release
 
-[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.4.0...HEAD
+[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.5.0...HEAD
+[4.5.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.4.0...4.5.0
 [4.4.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.3.0...4.4.0
 [4.3.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.2.0...4.3.0
 [4.2.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.1.1...4.2.0

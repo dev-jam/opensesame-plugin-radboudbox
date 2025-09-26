@@ -70,10 +70,10 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
             while self.experiment.radboudbox_get_buttons_locked:
                 self.clock.sleep(POLL_TIME)
 
-            self.experiment.radboudbox_get_buttons_locked = 1
-            self.experiment.radboudbox_get_buttons = True
             self._show_message('Start collecting buttons')
             self.experiment.radboudbox_get_buttons_thread = threading.Thread(target=self._start_buttons)
+            self.experiment.radboudbox_get_buttons_locked = 1
+            self.experiment.radboudbox_get_buttons = True
             self.experiment.radboudbox_get_buttons_thread.start()
             while self.stop:
                 self.clock.sleep(POLL_TIME)

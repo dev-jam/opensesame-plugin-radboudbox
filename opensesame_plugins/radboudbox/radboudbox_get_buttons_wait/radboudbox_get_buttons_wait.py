@@ -39,8 +39,7 @@ class RadboudboxGetButtonsWait(Item):
         self.set_item_onset()
         while not self.experiment.radboudbox_get_buttons_thread_running:
             self.clock.sleep(POLL_TIME)
-        if self.experiment.radboudbox_get_buttons_locked:
-            self.experiment.radboudbox_get_buttons_thread.join()
+        self.experiment.radboudbox_get_buttons_thread.join()
         self.experiment.radboudbox_get_buttons_thread_running = 0
         self.experiment.radboudbox_get_buttons = False
 

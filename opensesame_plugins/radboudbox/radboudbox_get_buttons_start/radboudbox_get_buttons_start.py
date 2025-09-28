@@ -35,10 +35,10 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
         self.var.timeout = 'infinite'
 
     def prepare_response_func(self):
-        self._keyboard = Keyboard(self.experiment,
-                                  keylist=self._allowed_responses,
-                                  timeout=self._timeout)
         if self.dummy_mode == 'yes':
+            self._keyboard = Keyboard(self.experiment,
+                                      keylist=self._allowed_responses,
+                                      timeout=self._timeout)
             return self._keyboard.get_key
 
     def process_response(self, response_args):

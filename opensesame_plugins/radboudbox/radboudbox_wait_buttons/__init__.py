@@ -11,19 +11,19 @@ controls = [
         "var": "allowed_responses",
         "label": "Allowed responses",
         "name": "line_edit_allowed_responses",
-        "tooltip": "Expecting a semicolon-separated list of button characters, e.g., A;B;C - Upper-case (H) for presses, lower-case (h) for release and S / V for sound/voice detect etc..."
+        "info": "e.g. A;B (a-h release, S/V sound/voice)"
     }, {
         "type": "line_edit",
         "var": "correct_response",
         "label": "Correct response",
         "name": "line_edit_correct_response",
-        "tooltip": "Expecting a semicolon-separated list of button characters, e.g., A;B;C - Upper-case (H) for presses, lower-case (h) for release and S / V for sound/voice detect etc..."
+        "info": "e.g. A, or A;B"
     }, {
         "type": "line_edit",
         "var": "timeout",
         "label": "Timeout (ms)",
         "name": "line_edit_timeout",
-        "tooltip": "Expecting a value in milliseconds or 'infinite'"
+        "info": "In ms, or 'infinite'"
     }, {
         "type": "text",
         "label": "<b>IMPORTANT:</b> this is a foreground item, it will wait for the button press/release or till the timeout has ended before advancing to the next item."

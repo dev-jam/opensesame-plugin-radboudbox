@@ -29,14 +29,13 @@ controls = [
            "LEDs Input",
            "LEDs Output"
        ],
-       "name": "combobox_command",
-       "tooltip": "Send command to the RadboudBox"
+       "name": "combobox_command"
     }, {
         "type": "line_edit",
         "var": "command_value",
         "label": "Command Value",
         "name": "line_edit_command_value",
-        "tooltip": "Command Value"
+        "info": "0-255, for commands with a value"
     }, {
         "type": "text",
         "label": "<small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>"

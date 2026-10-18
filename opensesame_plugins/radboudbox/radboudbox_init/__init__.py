@@ -11,31 +11,31 @@ controls = [
         "var": "dummy_mode",
         "label": "Dummy Mode",
         "name": "checkbox_dummy",
-        "tooltip": "Run in dummy mode"
+        "info": "No buttonbox: keyboard, nothing sent"
     }, {
         "type": "checkbox",
         "var": "verbose",
         "label": "Verbose Mode",
         "name": "checkbox_verbose",
-        "tooltip": "Run in verbose mode"
+        "info": "Messages in the debug window"
     }, {
         "type": "line_edit",
         "var": "id",
         "label": "Device id",
         "name": "line_edit_id",
-        "tooltip": "Expecting a valid device name or autodetect."
+        "info": "0 = last connected (with port autodetect)"
     }, {
         "type": "line_edit",
         "var": "port",
         "label": "Port",
         "name": "line_edit_port",
-        "tooltip": "Expecting a valid port device name or autodetect."
+        "info": "e.g. /dev/ttyACM0 or COM3"
     }, {
         "type": "checkbox",
         "var": "extended_mode",
         "label": "Bitsi Extended Mode",
         "name": "checkbox_extended",
-        "tooltip": "Buttonbox extended mode"
+        "info": "Needed for Send Control"
     }, {
         "type": "text",
         "label": "<small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>"

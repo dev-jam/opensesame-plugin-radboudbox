@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- the help texts of the controls are shown next to them (`info`); the `tooltip` texts were never shown, because OpenSesame ignores that key
+- the help text of the device id no longer says it is a device name: it is a number (0 is the device connected last), used with port autodetect
+
 ## [5.0.0] - 2026-10-18
 
 - fixed: init raises an error when the buttonbox can't be found or opened, instead of continuing (later items failed with an unclear error, or the experiment ran without the box)

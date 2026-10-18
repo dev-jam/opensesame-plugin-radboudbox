@@ -18,93 +18,16 @@ along with OpenSesame.  If not, see <http://www.gnu.org/licenses/>.
 __author__ = "Bob Rosbag"
 __license__ = "GPLv3"
 
-from libopensesame.py3compat import *
-from libopensesame.base_response_item import BaseResponseItem
-from libqtopensesame.items.qtautoplugin import QtAutoPlugin
-from libopensesame.exceptions import OSException
-from libopensesame.oslogging import oslogger
-from openexp.keyboard import Keyboard
+from ..radboudbox_item import RadboudboxResponseItem
 
-POLL_TIME = 1
 
-class RadboudboxWaitButtons(BaseResponseItem):
-
-    def reset(self):
-        self.var.timeout = 'infinite'
-
-    def prepare_response_func(self):
-        if self.dummy_mode == 'yes':
-            self._keyboard = Keyboard(self.experiment,
-                                      keylist=self._allowed_responses,
-                                      timeout=self._timeout)
-            return self._keyboard.get_key
-
-    def process_response(self, response_args):
-        response, t1 = response_args
-        if not response:
-            response = 'NA'
-        elif isinstance(response, list):
-            response = response[0]
-        super().process_response((safe_decode(response), t1))
-        response_time = round(t1 - self._t0, 1)
-        self._show_message(f"Detected press on button: '{response}'")
-        self._show_message(f"Response time: {response_time} ms")
-
-    def prepare(self):
-        self._check_init()
-        self._init_var()
-        super().prepare()
-        # rusocsci's waitButtons() fails with a timeout of 0
-        if self._timeout == 0:
-            raise OSException("Timeout should be more than 0 ms or 'infinite'")
+class RadboudboxWaitButtons(RadboudboxResponseItem):
 
     def run(self):
         self._t0 = self.set_item_onset()
-        if self.dummy_mode == 'no':
-            if self._timeout == 'infinite' or self._timeout == None:
-                self._timeout = float("inf")
-            else:
-                self._timeout = float(self._timeout) / 1000
-            while self.experiment.radboudbox_get_buttons_locked:
-                self.clock.sleep(POLL_TIME)
-            self._show_message('Start collecting buttons')
-            self._start_buttons()
-        else:
-            self._show_message('Dummy mode on, using keyboard')
-            self._keyboard.flush()
-            super().run()
-            self._set_response_time()
-
-    def _start_buttons(self):
-        response = self.experiment.radboudbox.waitButtons(maxWait=self._timeout,
-                                                      buttonList=self._allowed_responses,
-                                                      flush=self.flush)
-        t1 = self._set_response_time()
-        self.process_response((response, t1))
-
-    def _init_var(self):
-        self.dummy_mode = self.experiment.radboudbox_dummy_mode
-        self.verbose = self.experiment.radboudbox_verbose
-        self.flush = True
-
-    def _check_init(self):
-        if not hasattr(self.experiment, 'radboudbox_dummy_mode'):
-            raise OSException('You should have one instance of `radboudbox_init` at the start of your experiment')
-
-    def _show_message(self, message):
-        oslogger.debug(message)
-        if self.verbose == 'yes':
-            print(message)
-
-    def _set_response_time(self, time=None):
-        if time is None:
-            time = self.clock.time()
-        self.experiment.var.set(f'time_response_{self.name}', time)
-        return time
-
-
-class QtRadboudboxWaitButtons(RadboudboxWaitButtons, QtAutoPlugin):
-
-    def __init__(self, name, experiment, script=None):
-        RadboudboxWaitButtons.__init__(self, name, experiment, script)
-        QtAutoPlugin.__init__(self, __file__)
+        if self.dummy_mode:
+            self._collect_dummy_response()
+            return
+        self._wait_until_unlocked()
+        self._show_message('Start collecting buttons')
+        self._wait_buttons()

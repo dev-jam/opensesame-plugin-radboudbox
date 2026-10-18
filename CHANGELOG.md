@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - fixed: a timeout of 0 is an error (rusocsci's waitButtons() fails with it)
 - fixed: send control gives a clear error for an empty or unknown command (was a KeyError)
 - fixed: send trigger error messages for the pulse time
+- code shared by the items is in `radboudbox_item.py`; no `py3compat`; only send trigger and send control have a GUI class
+- changed: init no longer prints "No active radboudbox" at the start (it did even with verbose off)
+- changed: a failure to close the buttonbox at the end of the experiment is a warning in the log
+- changed: each setting is read once (this only matters for a setting with an expression)
+- changed: get buttons start continues up to 1 ms sooner (it no longer polls for the start of the thread)
 
 ## [4.6.0] - 2025-09-28
 

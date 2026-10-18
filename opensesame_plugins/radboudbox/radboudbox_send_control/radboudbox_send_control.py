@@ -18,11 +18,9 @@ along with OpenSesame.  If not, see <http://www.gnu.org/licenses/>.
 __author__ = "Bob Rosbag"
 __license__ = "GPLv3"
 
-from libopensesame.py3compat import *
-from libopensesame.item import Item
-from libqtopensesame.items.qtautoplugin import QtAutoPlugin
 from libopensesame.exceptions import OSException
-from libopensesame.oslogging import oslogger
+from libqtopensesame.items.qtautoplugin import QtAutoPlugin
+from ..radboudbox_item import RadboudboxItem
 
 CMD_DICT = {'Calibrate Sound': ['C', 'S'],
             'Calibrate Voice': ['C', 'V'],
@@ -52,7 +50,7 @@ VALUE_LIST = ['Marker Out', 'Pulse Out', 'Pulse Time', 'Analog Out 1', 'Analog O
 PAUSE = 1000
 
 
-class RadboudboxSendControl(Item):
+class RadboudboxSendControl(RadboudboxItem):
 
     def reset(self):
         self.var.command = ''
@@ -61,62 +59,41 @@ class RadboudboxSendControl(Item):
     def prepare(self):
         super().prepare()
         self._check_init()
-        self._check_extended()
-        self._init_var()
-
-    def run(self):
-        if self.command in VALUE_LIST:
-            if isinstance(self.var.command_value,int):
-                if self.var.command_value >= 0 and self.var.command_value <= 255:
-                    self.command_list.append(str(self.var.command_value))
-                    self.value_list.append(self.var.command_value)
-                else:
-                    raise OSException('Value should be between 0 and 255')
-            else:
-                raise OSException('Value should be an integer')
-
-        if self.dummy_mode == 'no':
-            if self.command in FLUSH_LIST:
-                self._show_message('Flushing events')
-                self.experiment.radboudbox.clearEvents()
-
-            self.set_item_onset()
-            self._show_message(f'Sending command: {self.command_list}')
-
-            for value in self.value_list:
-                self.experiment.radboudbox.send(value)
-
-            if self.command in PAUSE_LIST:
-                self._show_message(f'Sound/voice calibration for {PAUSE} ms')
-                self.clock.sleep(PAUSE)
-                self._show_message('Sound/voice calibration done!')
-        elif self.dummy_mode == 'yes':
-            self.set_item_onset()
-            self._show_message(f'Sending command: {self.command_list}')
-
-    def _init_var(self):
-        self.dummy_mode = self.experiment.radboudbox_dummy_mode
-        self.verbose = self.experiment.radboudbox_verbose
+        if self.experiment.radboudbox_extended_mode == 'no':
+            raise OSException('`radboudbox_send_control` item only works in Bitsi extended mode')
         self.command = self.var.command
         if self.command not in CMD_DICT:
             raise OSException(f"Unknown command '{self.command}', choose one "
                               f"of: {', '.join(CMD_DICT)}")
-        self.command_list = list(CMD_DICT[self.command])
-        self.value_list = [ord(item) for item in self.command_list]
 
-    def _check_init(self):
-        if not hasattr(self.experiment, 'radboudbox_dummy_mode'):
-            raise OSException(
-                'You should have one instance of `radboudbox_init` at the start of your experiment')
+    def run(self):
+        command_list = CMD_DICT[self.command]
+        value_list = [ord(item) for item in command_list]
+        if self.command in VALUE_LIST:
+            # The value may be set by an earlier item
+            value = self.var.command_value
+            if not isinstance(value, int):
+                raise OSException('Value should be an integer')
+            if not 0 <= value <= 255:
+                raise OSException('Value should be between 0 and 255')
+            command_list = command_list + [str(value)]
+            value_list.append(value)
 
-    def _check_extended(self):
-        if self.experiment.radboudbox_extended_mode == 'no':
-            raise OSException('`radboudbox_send_control` item only works in Bitsi extended mode')
-
-    def _show_message(self, message):
-        oslogger.debug(message)
-        if self.verbose == 'yes':
-            print(message)
+        if self.dummy_mode:
+            self.set_item_onset()
+            self._show_message(f'Sending command: {command_list}')
+            return
+        if self.command in FLUSH_LIST:
+            self._show_message('Flushing events')
+            self.experiment.radboudbox.clearEvents()
+        self.set_item_onset()
+        self._show_message(f'Sending command: {command_list}')
+        for value in value_list:
+            self.experiment.radboudbox.send(value)
+        if self.command in PAUSE_LIST:
+            self._show_message(f'Sound/voice calibration for {PAUSE} ms')
+            self.clock.sleep(PAUSE)
+            self._show_message('Sound/voice calibration done!')
 
 
 class QtRadboudboxSendControl(RadboudboxSendControl, QtAutoPlugin):
@@ -125,29 +102,18 @@ class QtRadboudboxSendControl(RadboudboxSendControl, QtAutoPlugin):
         RadboudboxSendControl.__init__(self, name, experiment, script)
         QtAutoPlugin.__init__(self, __file__)
 
-    def init_edit_widget(self):
-        super().init_edit_widget()
-
     def apply_edit_changes(self):
-        if not QtAutoPlugin.apply_edit_changes(self) or self.lock:
+        if not super().apply_edit_changes():
             return False
-        self.custom_interactions()
+        self._update_command_value()
         return True
 
     def edit_widget(self):
-        if self.lock:
-            return
-        self.lock = True
-        w = QtAutoPlugin.edit_widget(self)
-        self.custom_interactions()
-        self.lock = False
-        return w
+        widget = super().edit_widget()
+        self._update_command_value()
+        return widget
 
-    def custom_interactions(self):
-        if self.var.command in VALUE_LIST:
-            self.line_edit_command_value.setEnabled(True)
-        else:
-            self.line_edit_command_value.setDisabled(True)
-
-
-
+    def _update_command_value(self):
+        """Enables the value field only for commands that take a value."""
+        self.line_edit_command_value.setEnabled(
+            self.var.command in VALUE_LIST)

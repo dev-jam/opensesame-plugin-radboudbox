@@ -18,14 +18,12 @@ along with OpenSesame.  If not, see <http://www.gnu.org/licenses/>.
 __author__ = "Bob Rosbag"
 __license__ = "GPLv3"
 
-from libopensesame.py3compat import *
-from libopensesame.item import Item
-from libqtopensesame.items.qtautoplugin import QtAutoPlugin
 from libopensesame.exceptions import OSException
-from libopensesame.oslogging import oslogger
+from libqtopensesame.items.qtautoplugin import QtAutoPlugin
+from ..radboudbox_item import RadboudboxItem
 
 
-class RadboudboxSendTrigger(Item):
+class RadboudboxSendTrigger(RadboudboxItem):
 
     def reset(self):
         self.var.value = 0
@@ -35,53 +33,34 @@ class RadboudboxSendTrigger(Item):
     def prepare(self):
         super().prepare()
         self._check_init()
-        self._init_var()
+        self.pulse_mode = self.var.pulse_mode == 'yes'
 
     def run(self):
-        if isinstance(self.var.value, int):
-            if self.var.value >= 0 and self.var.value <= 255:
-                self.value = int(self.var.value)
-            else:
-                raise OSException('Trigger value should be between 0 and 255')
-        else:
-            raise OSException('Trigger value should be a integer')
+        # The value and pulse time may be set by an earlier item
+        value = self.var.value
+        if not isinstance(value, int):
+            raise OSException('Trigger value should be an integer')
+        if not 0 <= value <= 255:
+            raise OSException('Trigger value should be between 0 and 255')
+        self.value = value
 
-        if self.pulse_mode == 'yes':
-            if isinstance(self.var.pulse_time, int):
-                if self.var.pulse_time >= 0:
-                    self.pulse_time = int(self.var.pulse_time)
-                else:
-                    raise OSException('Pulse time should be equal to or larger than 0')
-            else:
+        if self.pulse_mode:
+            pulse_time = self.var.pulse_time
+            if not isinstance(pulse_time, int):
                 raise OSException('Pulse time should be an integer')
+            if pulse_time < 0:
+                raise OSException('Pulse time should be equal to or larger than 0')
+            self.pulse_time = pulse_time
 
-        if self.dummy_mode == 'no':
-            self.set_item_onset()
-            self._show_message(f'Sending trigger value {self.value}')
-            self.experiment.radboudbox.sendMarker(val=self.value)
-            if self.pulse_mode == 'yes':
-                self.clock.sleep(self.pulse_time)
-                self.experiment.radboudbox.sendMarker(val=0)
-
-        elif self.dummy_mode == 'yes':
+        if self.dummy_mode:
             self._show_message(f'Dummy mode enabled, NOT sending value {self.value}')
-        else:
-            self._show_message('Error with dummy mode')
-
-    def _init_var(self):
-        self.dummy_mode = self.experiment.radboudbox_dummy_mode
-        self.verbose = self.experiment.radboudbox_verbose
-        self.extended_mode = self.experiment.radboudbox_extended_mode
-        self.pulse_mode = self.var.pulse_mode
-
-    def _check_init(self):
-        if not hasattr(self.experiment, 'radboudbox_dummy_mode'):
-            raise OSException('You should have one instance of `radboudbox_init` at the start of your experiment')
-
-    def _show_message(self, message):
-        oslogger.debug(message)
-        if self.verbose == 'yes':
-            print(message)
+            return
+        self.set_item_onset()
+        self._show_message(f'Sending trigger value {self.value}')
+        self.experiment.radboudbox.sendMarker(val=self.value)
+        if self.pulse_mode:
+            self.clock.sleep(self.pulse_time)
+            self.experiment.radboudbox.sendMarker(val=0)
 
 
 class QtRadboudboxSendTrigger(RadboudboxSendTrigger, QtAutoPlugin):

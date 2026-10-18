@@ -18,29 +18,22 @@ along with OpenSesame.  If not, see <http://www.gnu.org/licenses/>.
 __author__ = "Bob Rosbag"
 __license__ = "GPLv3"
 
-from libopensesame.py3compat import *
-from libopensesame.item import Item
-from libqtopensesame.items.qtautoplugin import QtAutoPlugin
 from libopensesame.exceptions import OSException
-from libopensesame.oslogging import oslogger
-
-POLL_TIME = 10
+from ..radboudbox_item import RadboudboxItem
 
 
-class RadboudboxGetButtonsWait(Item):
+class RadboudboxGetButtonsWait(RadboudboxItem):
 
     def prepare(self):
         super().prepare()
         self._check_init()
-        self._init_var()
+        self.experiment.radboudbox_get_buttons_wait = True
 
     def run(self):
         self._check_start()
         self.set_item_onset()
         # In dummy mode, the start item has collected the response already
-        if self.dummy_mode == 'no':
-            while not self.experiment.radboudbox_get_buttons_thread_running:
-                self.clock.sleep(POLL_TIME)
+        if not self.dummy_mode:
             self.experiment.radboudbox_get_buttons_thread.join()
             self.experiment.radboudbox_get_buttons_thread_running = 0
         self.experiment.radboudbox_get_buttons = False
@@ -50,33 +43,10 @@ class RadboudboxGetButtonsWait(Item):
             raise OSException(f'Collecting buttons in the background failed: '
                               f'{error}') from error
 
-    def _init_var(self):
-        self.dummy_mode = self.experiment.radboudbox_dummy_mode
-        self.verbose = self.experiment.radboudbox_verbose
-        self.experiment.radboudbox_get_buttons_wait = True
-
-    def _check_init(self):
-        if not hasattr(self.experiment, 'radboudbox_dummy_mode'):
-            raise OSException('You should have one instance of `radboudbox_init` at the start of your experiment')
-
     def _check_start(self):
         if not hasattr(self.experiment, "radboudbox_get_buttons_start"):
             raise OSException(
                     '`Radboudbox Get Buttons Start` item is missing')
-        else:
-            if not self.experiment.radboudbox_get_buttons:
-                raise OSException(
-                        'Radboudbox not waiting for a button, you first have to start the buttonbox before waiting')
-
-    def _show_message(self, message):
-        oslogger.debug(message)
-        if self.verbose == 'yes':
-            print(message)
-
-
-class QtRadboudboxGetButtonsWait(RadboudboxGetButtonsWait, QtAutoPlugin):
-
-    def __init__(self, name, experiment, script=None):
-        RadboudboxGetButtonsWait.__init__(self, name, experiment, script)
-        QtAutoPlugin.__init__(self, __file__)
-
+        if not self.experiment.radboudbox_get_buttons:
+            raise OSException(
+                    'Radboudbox not waiting for a button, you first have to start the buttonbox before waiting')

@@ -1,5 +1,7 @@
 """Radboud Buttonbox - starts button registration in the background"""
 
+from .. import __version__
+
 # The category determines the group for the plugin in the item toolbar
 category = "RadboudBox"
 # Defines the GUI controls
@@ -30,6 +32,6 @@ controls = [
         "label": "<small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>"
     }, {
         "type": "text",
-        "label": "<small>Radboud Buttonbox version 4.6.0</small>"
+        "label": f"<small>Radboud Buttonbox version {__version__}</small>"
     }
 ]

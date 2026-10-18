@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - changed: a failure to close the buttonbox at the end of the experiment is a warning in the log
 - changed: each setting is read once (this only matters for a setting with an expression)
 - changed: get buttons start continues up to 1 ms sooner (it no longer polls for the start of the thread)
+- the version label of the items reads the version from the installed package (set only in `pyproject.toml`)
 
 ## [4.6.0] - 2025-09-28
 

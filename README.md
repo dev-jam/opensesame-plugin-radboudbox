@@ -18,7 +18,7 @@ For more information:
 <http://tsgdoc.socsci.ru.nl/index.php?title=ButtonBoxes>
 
 
-This plug-in consist of foreground and background (multithreaded) items.
+This plug-in consists of foreground and background (multithreaded) items.
 
 
 Difference between foreground and background:
@@ -32,7 +32,7 @@ This plug-in has six items:
 - **Init** initialization of the buttonbox, this should be placed at the beginning of an experiment.
 - **Wait Buttons** waits for a button press or release before continuing to the next item in the experiment
 - **Get Buttons Start** starts a new thread which monitors for button presses/releases, it will directly advance to the next item in the experiment
-- **Get buttons Wait** waits until the thread from 'Get Buttons Start' is finished (has detected a button press/release) before advancing to the next item in the experiment 
+- **Get Buttons Wait** waits until the thread from 'Get Buttons Start' is finished (has detected a button press/release) before advancing to the next item in the experiment 
 - **Send Control** send control code to the buttonbox, for example 'Calibrate Sound', 'Detect Sound'
 - **Send Trigger** for sending triggers to hardware with a parallel port
 
@@ -40,7 +40,12 @@ This plug-in has six items:
 Timestamps can be found in the logs by the name: time_response_[item_name]
 
 
-Linux, and Windows are supported (possible also OSX, not tested). The plug-in will first look for the globally installed rusocsci package. If this is not available, the shipped version will be used. Install options are listed below.
+In **dummy mode** (an option of the Init item) the plug-in runs without a buttonbox: the keyboard is used for button responses, and triggers and commands are not sent. Get Buttons Start then waits for the key press itself, because the keyboard can't be read in the background.
+
+
+Linux and Windows are supported (possibly also macOS, not tested). The plug-in needs OpenSesame 4 (Python 3.10 or later) and the [RuSocSci](https://pypi.org/project/RuSocSci/) package, which is installed with it:
+
+    pip install opensesame-plugin-radboudbox
   
   
 ## License

@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - changed: each setting is read once (this only matters for a setting with an expression)
 - changed: get buttons start continues up to 1 ms sooner (it no longer polls for the start of the thread)
 - the version label of the items reads the version from the installed package (set only in `pyproject.toml`)
+- license metadata is the SPDX identifier `GPL-3.0-or-later` (it was the file `LICENSE.md`, which is removed; the license text is in `COPYING`)
+- requires Python 3.10 or later
+- readme: rusocsci is installed with the plug-in (there is no shipped copy), dummy mode
 
 ## [4.6.0] - 2025-09-28
 

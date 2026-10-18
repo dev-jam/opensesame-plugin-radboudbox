@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.0.1] - 2026-10-18
 
 - the help texts of the controls are shown next to them (`info`); the `tooltip` texts were never shown, because OpenSesame ignores that key
 - the help text of the device id no longer says it is a device name: it is a number (0 is the device connected last), used with port autodetect
@@ -100,7 +100,8 @@ Final release for OpenSesame 3 API
 
 - First release
 
-[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.0.0...HEAD
+[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.0.1...HEAD
+[5.0.1]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.0.0...5.0.1
 [5.0.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.6.0...5.0.0
 [4.6.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.5.0...4.6.0
 [4.5.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/4.4.0...4.5.0

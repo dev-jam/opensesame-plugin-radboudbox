@@ -56,6 +56,9 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
         self._check_init()
         self._init_var()
         super().prepare()
+        # rusocsci's waitButtons() fails with a timeout of 0
+        if self._timeout == 0:
+            raise OSException("Timeout should be more than 0 ms or 'infinite'")
 
     def run(self):
         self._check_wait()
@@ -72,6 +75,7 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
 
             self._show_message('Start collecting buttons')
             self.experiment.radboudbox_get_buttons_thread = threading.Thread(target=self._start_buttons)
+            self.experiment.radboudbox_get_buttons_error = None
             self.experiment.radboudbox_get_buttons_locked = 1
             self.experiment.radboudbox_get_buttons = True
             self.experiment.radboudbox_get_buttons_thread.start()
@@ -80,6 +84,7 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
             self.clock.sleep(1)
         else:
             self._show_message('Dummy mode on, using keyboard')
+            self.experiment.radboudbox_get_buttons = True
             self._keyboard.flush()
             super().run()
             self._set_response_time()
@@ -88,13 +93,17 @@ class RadboudboxGetButtonsStart(BaseResponseItem):
         self.experiment.radboudbox_get_buttons_thread_running = 1
         self.stop = 0
 
-        response = self.experiment.radboudbox.waitButtons(maxWait=self._timeout,
-                                                      buttonList=self._allowed_responses,
-                                                      flush=self.flush)
-        t1 = self._set_response_time()
-        self.process_response((response, t1))
-
-        self.experiment.radboudbox_get_buttons_locked = 0
+        try:
+            response = self.experiment.radboudbox.waitButtons(maxWait=self._timeout,
+                                                          buttonList=self._allowed_responses,
+                                                          flush=self.flush)
+            t1 = self._set_response_time()
+            self.process_response((response, t1))
+        except Exception as e:
+            # Raised by the wait item
+            self.experiment.radboudbox_get_buttons_error = e
+        finally:
+            self.experiment.radboudbox_get_buttons_locked = 0
 
     def _init_var(self):
         self.dummy_mode = self.experiment.radboudbox_dummy_mode

@@ -37,11 +37,18 @@ class RadboudboxGetButtonsWait(Item):
     def run(self):
         self._check_start()
         self.set_item_onset()
-        while not self.experiment.radboudbox_get_buttons_thread_running:
-            self.clock.sleep(POLL_TIME)
-        self.experiment.radboudbox_get_buttons_thread.join()
-        self.experiment.radboudbox_get_buttons_thread_running = 0
+        # In dummy mode, the start item has collected the response already
+        if self.dummy_mode == 'no':
+            while not self.experiment.radboudbox_get_buttons_thread_running:
+                self.clock.sleep(POLL_TIME)
+            self.experiment.radboudbox_get_buttons_thread.join()
+            self.experiment.radboudbox_get_buttons_thread_running = 0
         self.experiment.radboudbox_get_buttons = False
+        error = getattr(self.experiment, 'radboudbox_get_buttons_error', None)
+        if error is not None:
+            self.experiment.radboudbox_get_buttons_error = None
+            raise OSException(f'Collecting buttons in the background failed: '
+                              f'{error}') from error
 
     def _init_var(self):
         self.dummy_mode = self.experiment.radboudbox_dummy_mode

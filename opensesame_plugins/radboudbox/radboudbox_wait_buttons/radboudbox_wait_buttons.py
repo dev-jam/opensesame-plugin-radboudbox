@@ -54,6 +54,9 @@ class RadboudboxWaitButtons(BaseResponseItem):
         self._check_init()
         self._init_var()
         super().prepare()
+        # rusocsci's waitButtons() fails with a timeout of 0
+        if self._timeout == 0:
+            raise OSException("Timeout should be more than 0 ms or 'infinite'")
 
     def run(self):
         self._t0 = self.set_item_onset()

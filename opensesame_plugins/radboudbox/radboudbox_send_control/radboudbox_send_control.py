@@ -98,6 +98,9 @@ class RadboudboxSendControl(Item):
         self.dummy_mode = self.experiment.radboudbox_dummy_mode
         self.verbose = self.experiment.radboudbox_verbose
         self.command = self.var.command
+        if self.command not in CMD_DICT:
+            raise OSException(f"Unknown command '{self.command}', choose one "
+                              f"of: {', '.join(CMD_DICT)}")
         self.command_list = list(CMD_DICT[self.command])
         self.value_list = [ord(item) for item in self.command_list]
 

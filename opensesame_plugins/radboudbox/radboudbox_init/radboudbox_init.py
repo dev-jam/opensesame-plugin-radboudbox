@@ -37,32 +37,47 @@ class RadboudboxInit(Item):
     def prepare(self):
         super().prepare()
         self.verbose = 'yes'
+        self._check_init()
         self.close()
         self._init_var()
-        self._check_init()
 
         if self.dummy_mode == 'no':
             try:
                 from rusocsci import buttonbox
                 from rusocsci import extended
-            except ImportError:
-                self._show_message('The RuSocSci package could not be imported. Please install package.')
+                from rusocsci import utils
+            except ImportError as e:
+                raise OSException('The RuSocSci package could not be imported. '
+                                  'Please install it: pip install rusocsci') from e
+            if self.port is None:
+                self.port = utils.getPort(self.id)
+                if self.port is None:
+                    raise OSException(
+                        f'Could not find the Radboud Buttonbox: no USB serial '
+                        f'device with device id {self.id} (0 is the device '
+                        f'connected last)')
+                # On Windows, rusocsci returns the port name as bytes
+                if isinstance(self.port, bytes):
+                    self.port = self.port.decode()
             try:
                 if self.var.extended_mode == 'no':
-                    self.experiment.radboudbox = buttonbox.Buttonbox(id=self.id,
-                                                                     port=self.port)
-                elif self.var.extended_mode == 'yes':
-                    self.experiment.radboudbox = extended.Extended(id=self.id,
-                                                                     port=self.port)
-                self.clock.sleep(4000)
-                self.experiment.cleanup_functions.append(self.close)
-                # self.python_workspace['radboudbox'] = self.experiment.radboudbox
-            except OSError:
-                self._show_message('Could not access the Radboud Buttonbox')
+                    radboudbox = buttonbox.Buttonbox(id=self.id, port=self.port)
+                else:
+                    radboudbox = extended.Extended(id=self.id, port=self.port)
+            except Exception as e:
+                raise OSException(f'Could not access the Radboud Buttonbox on '
+                                  f'port {self.port}: {e}') from e
+            # rusocsci logs the reason and doesn't raise an exception
+            if radboudbox._device is None:
+                raise OSException(f'Could not open port {self.port} of the '
+                                  f'Radboud Buttonbox, see the log for the '
+                                  f'reason')
+            self.experiment.radboudbox = radboudbox
+            self.clock.sleep(4000)
+            self.experiment.cleanup_functions.append(self.close)
+            # self.python_workspace['radboudbox'] = self.experiment.radboudbox
         elif self.dummy_mode == 'yes':
             self._show_message('Dummy mode enabled, prepare phase')
-        else:
-            self._show_message(f'Error with dummy mode, dummy mode: {self.dummy_mode}')
 
     def run(self):
         self.set_item_onset()
@@ -81,12 +96,18 @@ class RadboudboxInit(Item):
             self._show_message("Failed to close radboudbox")
 
     def _check_init(self):
-        if hasattr(self.experiment, 'radboudbox'):
+        if hasattr(self.experiment, 'radboudbox_dummy_mode'):
             raise OSException('You should have only one instance of `radboudbox_init` in your experiment')
 
     def _init_var(self):
         self.dummy_mode = self.var.dummy_mode
         self.verbose = self.var.verbose
+        if self.dummy_mode not in ('yes', 'no'):
+            raise OSException(f"Dummy mode should be 'yes' or 'no', not "
+                              f"'{self.dummy_mode}'")
+        if self.var.extended_mode not in ('yes', 'no'):
+            raise OSException(f"Bitsi extended mode should be 'yes' or 'no', "
+                              f"not '{self.var.extended_mode}'")
         self.experiment.radboudbox_extended_mode = self.var.extended_mode
         self.experiment.radboudbox_dummy_mode = self.var.dummy_mode
         self.experiment.radboudbox_verbose = self.var.verbose
@@ -102,8 +123,14 @@ class RadboudboxInit(Item):
 
         if self.var.port == 'autodetect':
             self.port = None
+            # The device id is only used to choose a port
+            if not isinstance(self.id, int):
+                raise OSException(
+                    f"Device id should be a number (0 is the device connected "
+                    f"last) or 'autodetect', not '{self.id}'. Use Port for a "
+                    f"port name")
         else:
-            self.port = self.var.port
+            self.port = str(self.var.port)
 
     def _show_message(self, message):
         oslogger.debug(message)

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- fixed: init raises an error when the buttonbox can't be found or opened, instead of continuing (later items failed with an unclear error, or the experiment ran without the box)
+- fixed: init raises an error when rusocsci is missing, for an invalid dummy mode or bitsi extended mode, and for a device id that is not a number (with port autodetect)
+- fixed: a second init item is an error in dummy mode too
+- fixed: get buttons start and wait work in dummy mode (the wait item always failed)
+- fixed: an error while collecting buttons in the background (e.g. a lost connection) is raised by the get buttons wait item; before, it was ignored and a later wait buttons item waited forever
+- fixed: a timeout of 0 is an error (rusocsci's waitButtons() fails with it)
+- fixed: send control gives a clear error for an empty or unknown command (was a KeyError)
+- fixed: send trigger error messages for the pulse time
 
 ## [4.6.0] - 2025-09-28
 

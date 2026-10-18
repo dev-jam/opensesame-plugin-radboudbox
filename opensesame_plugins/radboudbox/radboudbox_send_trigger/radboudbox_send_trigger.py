@@ -51,9 +51,9 @@ class RadboudboxSendTrigger(Item):
                 if self.var.pulse_time >= 0:
                     self.pulse_time = int(self.var.pulse_time)
                 else:
-                    raise OSException('Trigger value should be equal to or larger than 0')
+                    raise OSException('Pulse time should be equal to or larger than 0')
             else:
-                raise OSException('Trigger value should be a integer')
+                raise OSException('Pulse time should be an integer')
 
         if self.dummy_mode == 'no':
             self.set_item_onset()

@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - license metadata is the SPDX identifier `GPL-3.0-or-later` (it was the file `LICENSE.md`, which is removed; the license text is in `COPYING`)
 - requires Python 3.10 or later
 - readme: rusocsci is installed with the plug-in (there is no shipped copy), dummy mode
+- changed: send trigger and send control set the onset (`time_<item>`) right after sending, and print their messages afterwards ("Sent ..."), so a slow console can't delay the trigger or the end of the pulse
+- changed: in dummy mode, send trigger logs `time_<item>` and waits for the pulse time, and send control waits for the sound/voice calibration (1000 ms), as with the buttonbox
 
 ## [4.6.0] - 2025-09-28
 

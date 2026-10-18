@@ -79,17 +79,20 @@ class RadboudboxSendControl(RadboudboxItem):
             command_list = command_list + [str(value)]
             value_list.append(value)
 
-        if self.dummy_mode:
-            self.set_item_onset()
-            self._show_message(f'Sending command: {command_list}')
-            return
-        if self.command in FLUSH_LIST:
-            self._show_message('Flushing events')
-            self.experiment.radboudbox.clearEvents()
+        # The messages come after sending. Dummy mode also pauses for the
+        # calibration, so the timing is the same.
+        if not self.dummy_mode:
+            if self.command in FLUSH_LIST:
+                self.experiment.radboudbox.clearEvents()
+            for value in value_list:
+                self.experiment.radboudbox.send(value)
         self.set_item_onset()
-        self._show_message(f'Sending command: {command_list}')
-        for value in value_list:
-            self.experiment.radboudbox.send(value)
+        if self.dummy_mode:
+            self._show_message(f'Dummy mode enabled, NOT sending command: {command_list}')
+        else:
+            if self.command in FLUSH_LIST:
+                self._show_message('Flushed events')
+            self._show_message(f'Sent command: {command_list}')
         if self.command in PAUSE_LIST:
             self._show_message(f'Sound/voice calibration for {PAUSE} ms')
             self.clock.sleep(PAUSE)

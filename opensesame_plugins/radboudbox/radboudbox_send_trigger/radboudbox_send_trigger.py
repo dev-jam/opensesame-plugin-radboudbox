@@ -52,15 +52,20 @@ class RadboudboxSendTrigger(RadboudboxItem):
                 raise OSException('Pulse time should be equal to or larger than 0')
             self.pulse_time = pulse_time
 
-        if self.dummy_mode:
-            self._show_message(f'Dummy mode enabled, NOT sending value {self.value}')
-            return
+        # Nothing between sending and resetting the trigger, so the messages
+        # come last. Dummy mode waits as well, so the timing is the same.
+        if not self.dummy_mode:
+            self.experiment.radboudbox.sendMarker(val=self.value)
         self.set_item_onset()
-        self._show_message(f'Sending trigger value {self.value}')
-        self.experiment.radboudbox.sendMarker(val=self.value)
         if self.pulse_mode:
             self.clock.sleep(self.pulse_time)
-            self.experiment.radboudbox.sendMarker(val=0)
+            if not self.dummy_mode:
+                self.experiment.radboudbox.sendMarker(val=0)
+        pulse = f', pulse of {self.pulse_time} ms' if self.pulse_mode else ''
+        if self.dummy_mode:
+            self._show_message(f'Dummy mode enabled, NOT sending value {self.value}{pulse}')
+        else:
+            self._show_message(f'Sent trigger value {self.value}{pulse}')
 
 
 class QtRadboudboxSendTrigger(RadboudboxSendTrigger, QtAutoPlugin):

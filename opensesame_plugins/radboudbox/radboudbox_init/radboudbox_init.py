@@ -28,6 +28,10 @@ from ..radboudbox_item import RadboudboxItem
 # Arduino Duemilanove), Arduino and Teensy (BITSI 2018)
 BUTTONBOX_VENDOR_IDS = {0x0403, 0x2341, 0x2A03, 0x16C0}
 
+# The mode is set on the box: hold two buttons while connecting it
+MODE_BUTTONS = ('BITSI 2015 and BITSI 2018 Duemilanove: A+H simple, B+H '
+                'extended; BITSI 2018 Teensy: A+E simple, B+E extended')
+
 
 class RadboudboxInit(RadboudboxItem):
 
@@ -74,6 +78,15 @@ class RadboudboxInit(RadboudboxItem):
         port = self.port
         if port is None:
             port = self._find_port(utils.serialList())
+        # rusocsci reads the ID string of the box, but doesn't keep it
+        id_strings = []
+        open_port = utils.open
+
+        def open_and_keep_id(port):
+            device, id_string = open_port(port)
+            id_strings.append(id_string)
+            return device, id_string
+        utils.open = open_and_keep_id
         try:
             if self.extended_mode:
                 radboudbox = extended.Extended(id=self.id, port=port)
@@ -82,11 +95,51 @@ class RadboudboxInit(RadboudboxItem):
         except Exception as e:
             raise OSException(f'Could not access the Radboud Buttonbox on '
                               f'port {port}: {e}') from e
+        finally:
+            utils.open = open_port
         # rusocsci logs the reason and doesn't raise an exception
         if radboudbox._device is None:
             raise OSException(f'Could not open port {port} of the Radboud '
                               f'Buttonbox, see the log for the reason')
+        id_string = id_strings[0] if id_strings else None
+        self.experiment.radboudbox_id_string = id_string
+        try:
+            self._check_mode(id_string)
+        except OSException:
+            radboudbox.close()
+            raise
         return radboudbox
+
+    def _check_mode(self, id_string):
+        """Checks that the box is in the mode of the init item, with the ID
+        string that the box sends when it starts. A box in the wrong mode
+        sends wrong triggers without an error.
+        """
+        mode = 'extended' if self.extended_mode else 'simple'
+        if id_string is None or 'Ready!' not in id_string:
+            # E.g. "USB serial timeout": rusocsci didn't get it in time
+            oslogger.warning(
+                f'The Radboud Buttonbox did not send its ID string '
+                f'({id_string!r}), so init could not check that the box is '
+                f'in {mode} mode')
+            return
+        self._show_message(f'Radboud Buttonbox: {id_string}')
+        if 'BITSI_extend mode' in id_string:
+            box_mode = 'extended'
+        elif 'BITSI mode' in id_string or 'BITSI event mode' in id_string:
+            box_mode = 'simple'
+        else:
+            raise OSException(
+                f"The Radboud Buttonbox is in a mode this plugin doesn't "
+                f"support ('{id_string}'). Switch it to {mode} mode: hold two "
+                f"buttons while connecting it ({MODE_BUTTONS})")
+        if box_mode != mode:
+            raise OSException(
+                f"The Radboud Buttonbox is in {box_mode} mode, but Bitsi "
+                f"Extended Mode in the init item is "
+                f"'{'yes' if self.extended_mode else 'no'}' ({mode} mode). "
+                f"Change the init item, or switch the box: hold two buttons "
+                f"while connecting it ({MODE_BUTTONS})")
 
     def _find_port(self, ports):
         """Chooses a port from rusocsci's list of USB serial devices (the
@@ -162,6 +215,7 @@ class RadboudboxInit(RadboudboxItem):
         self.experiment.radboudbox_verbose = verbose
         self.experiment.radboudbox_get_buttons_locked = 0
         self.experiment.radboudbox_get_buttons = None
+        self.experiment.radboudbox_id_string = None
 
         device_id = self.var.id
         port = self.var.port

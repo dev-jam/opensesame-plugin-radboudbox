@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - fixed: port autodetect takes the first buttonbox (FTDI, Arduino or Teensy USB device) instead of the device connected last; it took, for example, the serial port of an audio interface, and the experiment ran without the buttonbox (also in 4.6.0 and earlier)
 - a device id that points to another USB device is an error that names the device and the buttonboxes found
 - pyserial is a declared dependency (init uses it directly; rusocsci already installed it)
+- fixed: init raises an error when the box is in another mode (simple or extended, set on the box itself) than Bitsi Extended Mode in the init item; before, triggers and commands were sent wrong without an error. The check uses the ID string the box sends at the start; without it, there is a warning in the log
+- the ID string of the box is on the experiment as `radboudbox_id_string` (None when it didn't arrive)
 
 ## [5.0.1] - 2026-10-18
 

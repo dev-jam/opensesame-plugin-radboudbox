@@ -45,7 +45,11 @@ PAUSE_LIST = ['Calibrate Sound', 'Calibrate Voice']
 
 FLUSH_LIST = ['Detect Sound', 'Detect Voice']
 
-VALUE_LIST = ['Marker Out', 'Pulse Out', 'Pulse Time', 'Analog Out 1', 'Analog Out 2', 'Tone']
+# Tone is one character: a value after it would be read as a new command
+VALUE_LIST = ['Marker Out', 'Pulse Out', 'Pulse Time', 'Analog Out 1', 'Analog Out 2']
+
+# Only in the 2018 firmware, whose ID string has a version (" w:2018")
+FIRMWARE_2018_LIST = ['Pulse Out', 'Pulse Time']
 
 PAUSE = 1000
 
@@ -65,6 +69,15 @@ class RadboudboxSendControl(RadboudboxItem):
         if self.command not in CMD_DICT:
             raise OSException(f"Unknown command '{self.command}', choose one "
                               f"of: {', '.join(CMD_DICT)}")
+        # The 2015 firmware ignores the command, and may read its value as
+        # the start of a new command
+        id_string = self.experiment.radboudbox_id_string
+        if self.command in FIRMWARE_2018_LIST and id_string is not None \
+                and 'Ready!' in id_string and ' w:' not in id_string:
+            raise OSException(
+                f"'{self.command}' needs a buttonbox with the 2018 firmware; "
+                f"this box has an older one ('{id_string}'). For a pulse, use "
+                f"Send Trigger with pulse mode")
 
     def run(self):
         command_list = CMD_DICT[self.command]

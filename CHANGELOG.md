@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - pyserial is a declared dependency (init uses it directly; rusocsci already installed it)
 - fixed: init raises an error when the box is in another mode (simple or extended, set on the box itself) than Bitsi Extended Mode in the init item; before, triggers and commands were sent wrong without an error. The check uses the ID string the box sends at the start; without it, there is a warning in the log
 - the ID string of the box is on the experiment as `radboudbox_id_string` (None when it didn't arrive)
+- fixed: send control Tone sends no value; the box reads Tone as one character, so the value was read as the start of a new command (e.g. 77 turned the next command into a marker)
+- send control Pulse Out and Pulse Time are an error on a box with the 2015 firmware (when its ID string arrived): it doesn't have them, and may read the value as a new command
 
 ## [5.0.1] - 2026-10-18
 

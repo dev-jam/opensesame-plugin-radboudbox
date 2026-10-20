@@ -23,7 +23,7 @@ controls = [
         "var": "id",
         "label": "Device id",
         "name": "line_edit_id",
-        "info": "0 = last connected (with port autodetect)"
+        "info": "autodetect = first buttonbox, 0 = last connected"
     }, {
         "type": "line_edit",
         "var": "port",

@@ -18,9 +18,15 @@ along with OpenSesame.  If not, see <http://www.gnu.org/licenses/>.
 __author__ = "Bob Rosbag"
 __license__ = "GPLv3"
 
+import os
+
 from libopensesame.exceptions import OSException
 from libopensesame.oslogging import oslogger
 from ..radboudbox_item import RadboudboxItem
+
+# USB vendor ids of the boards in the buttonboxes: FTDI (USB UART of the
+# Arduino Duemilanove), Arduino and Teensy (BITSI 2018)
+BUTTONBOX_VENDOR_IDS = {0x0403, 0x2341, 0x2A03, 0x16C0}
 
 
 class RadboudboxInit(RadboudboxItem):
@@ -67,15 +73,7 @@ class RadboudboxInit(RadboudboxItem):
                               'Please install it: pip install rusocsci') from e
         port = self.port
         if port is None:
-            port = utils.getPort(self.id)
-            if port is None:
-                raise OSException(
-                    f'Could not find the Radboud Buttonbox: no USB serial '
-                    f'device with device id {self.id} (0 is the device '
-                    f'connected last)')
-            # On Windows, rusocsci returns the port name as bytes
-            if isinstance(port, bytes):
-                port = port.decode()
+            port = self._find_port(utils.serialList())
         try:
             if self.extended_mode:
                 radboudbox = extended.Extended(id=self.id, port=port)
@@ -89,6 +87,57 @@ class RadboudboxInit(RadboudboxItem):
             raise OSException(f'Could not open port {port} of the Radboud '
                               f'Buttonbox, see the log for the reason')
         return radboudbox
+
+    def _find_port(self, ports):
+        """Chooses a port from rusocsci's list of USB serial devices (the
+        device connected last first). rusocsci takes any device, e.g. the
+        serial port of an audio interface, so the USB vendor id is checked.
+        Autodetect takes the first buttonbox, or else the first port without
+        USB data (it can't be checked); a device id takes that position.
+        """
+        from serial.tools import list_ports
+        # On Windows, rusocsci returns the port names as bytes
+        ports = [p.decode() if isinstance(p, bytes) else p for p in ports]
+        usb_info = {}
+        for info in list_ports.comports():
+            usb_info[info.device] = info
+            usb_info[os.path.realpath(info.device)] = info
+
+        def info(port):
+            return usb_info.get(port, usb_info.get(os.path.realpath(port)))
+
+        def is_other_device(port):
+            return info(port) is not None and info(port).vid is not None \
+                and info(port).vid not in BUTTONBOX_VENDOR_IDS
+
+        def describe(ports):
+            return ', '.join(
+                f'{p} ({info(p).description}, {info(p).hwid})'
+                if info(p) is not None else p for p in ports) or 'none'
+
+        boxes = [p for p in ports if not is_other_device(p)]
+        others = [p for p in ports if is_other_device(p)]
+        if not ports:
+            raise OSException('Could not find the Radboud Buttonbox: no USB '
+                              'serial device found')
+        if self.id is None:
+            if boxes:
+                return boxes[0]
+            raise OSException(
+                f'Could not find the Radboud Buttonbox. Other USB serial '
+                f'devices: {describe(others)}')
+        if not -len(ports) <= self.id < len(ports):
+            raise OSException(
+                f'Could not find the Radboud Buttonbox: no USB serial device '
+                f'with device id {self.id} (0 is the device connected last). '
+                f'USB serial devices: {describe(ports)}')
+        port = ports[self.id]
+        if is_other_device(port):
+            raise OSException(
+                f'Could not find the Radboud Buttonbox: device id {self.id} '
+                f'is another USB device: {describe([port])}. Buttonboxes: '
+                f'{describe(boxes)}')
+        return port
 
     def _check_single_init(self):
         if hasattr(self.experiment, 'radboudbox_dummy_mode'):
@@ -116,14 +165,15 @@ class RadboudboxInit(RadboudboxItem):
 
         device_id = self.var.id
         port = self.var.port
-        self.id = 0 if device_id == 'autodetect' else device_id
+        # None: the first buttonbox found
+        self.id = None if device_id == 'autodetect' else device_id
         if port == 'autodetect':
             self.port = None
             # The device id is only used to choose a port
-            if not isinstance(self.id, int):
+            if self.id is not None and not isinstance(self.id, int):
                 raise OSException(
                     f"Device id should be a number (0 is the device connected "
-                    f"last) or 'autodetect', not '{self.id}'. Use Port for a "
-                    f"port name")
+                    f"last) or 'autodetect', not '{device_id}'. Use Port for "
+                    f"a port name")
         else:
             self.port = str(port)

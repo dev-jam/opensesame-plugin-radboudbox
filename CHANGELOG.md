@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- fixed: port autodetect takes the first buttonbox (FTDI, Arduino or Teensy USB device) instead of the device connected last; it took, for example, the serial port of an audio interface, and the experiment ran without the buttonbox (also in 4.6.0 and earlier)
+- a device id that points to another USB device is an error that names the device and the buttonboxes found
+- pyserial is a declared dependency (init uses it directly; rusocsci already installed it)
+
 ## [5.0.1] - 2026-10-18
 
 - the help texts of the controls are shown next to them (`info`); the `tooltip` texts were never shown, because OpenSesame ignores that key

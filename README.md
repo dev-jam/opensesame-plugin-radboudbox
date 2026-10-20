@@ -48,6 +48,39 @@ Linux and Windows are supported (possibly also macOS, not tested). The plug-in n
     pip install opensesame-plugin-radboudbox
   
   
+## Buttonboxes
+
+| | BITSI 2015 | BITSI 2018 (Duemilanove) | BITSI 2018 (Teensy 3.6) |
+|---|---|---|---|
+| Board | Arduino Duemilanove, FTDI USB (0403:6001) | Arduino Duemilanove, FTDI USB (0403:6001) | Teensy 3.6 (USB vendor 16C0) |
+| Port on Linux | /dev/ttyUSB*, /dev/serial/by-id/usb-FTDI_* | /dev/ttyUSB*, /dev/serial/by-id/usb-FTDI_* | /dev/ttyACM* |
+| ID string (extended mode) | `BITSI_extend mode, Ready!` | `BITSI_extend mode, Ready! w:2018` | `BITSI_extend mode, Ready! w:2018` |
+| Simple mode | hold A+H while connecting | hold A+H while connecting | hold A+E while connecting |
+| Extended mode | hold B+H while connecting | hold B+H while connecting | hold B+E while connecting |
+
+**Mode.** The box stores its mode (simple or extended) itself. *Bitsi Extended Mode* in the Init item must match it: a box in the other mode sends wrong triggers. Init checks this with the ID string the box sends when it starts, and raises an error when the modes differ. When the ID string doesn't arrive in time, the mode can't be checked; there is a warning in the log.
+
+**Port.** With port *autodetect*, Init takes the first buttonbox it finds (an FTDI, Arduino or Teensy USB device). Other USB serial devices, such as the serial port of an audio interface, are skipped. A *Device id* takes that position in the list of USB serial devices (0 is the device connected last). To choose a port yourself, set *Port*, e.g. `/dev/ttyUSB0` or `COM3`.
+
+**Triggers.** Send Trigger works on all boxes, in both modes. Its pulse mode sets the value, waits for the pulse time and sets 0, so it also works on the BITSI 2015.
+
+**Send Control** (extended mode only):
+
+| Command | Sends | 2015 | 2018 Duemilanove | 2018 Teensy | Notes |
+|---|---|---|---|---|---|
+| Calibrate Sound / Voice | `C S` / `C V` | yes | yes | yes | the item waits 1000 ms: be silent |
+| Detect Sound / Voice | `D S` / `D V` | yes | yes | yes | the box sends `S` / `V` once; collect it with Wait Buttons or Get Buttons (allowed response `S` or `V`) |
+| Marker Out | `M` value | yes | yes | yes | the output keeps the value until the next marker |
+| Pulse Out | `P` value | no | yes | yes | value for the pulse time, then 0 (default 100 ms) |
+| Pulse Time | `X` ms | no | yes | yes | pulse time of Pulse Out, 0-255 ms |
+| Analog Out 1 / 2 | `Y` / `Z` value | yes | yes | yes | 0-255 |
+| Tone | `T` | yes | yes | yes | beep of 100 ms |
+| Analog In 1-4 | `A 1`-`A 4` | yes | yes | yes | the value is logged as `analog_in_[item_name]` |
+| LEDs Off / Input / Output | `L X` / `L I` / `L O` | Off and Output | yes | no effect | Input: the LEDs show the buttons; Output: the LEDs show the markers |
+
+Pulse Out and Pulse Time are an error on a BITSI 2015 (when its ID string arrived): its firmware doesn't have them.
+
+
 ## License
 
 This software is distributed under the terms of the GNU General Public License 3. The full license should be included in the file `COPYING`, or can be obtained from:

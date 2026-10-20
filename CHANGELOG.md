@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - fixed: send control Tone sends no value; the box reads Tone as one character, so the value was read as the start of a new command (e.g. 77 turned the next command into a marker)
 - send control Pulse Out and Pulse Time are an error on a box with the 2015 firmware (when its ID string arrived): it doesn't have them, and may read the value as a new command
 - send control Analog In 1-4 reads the number the box sends back and logs it as `analog_in_<item name>` (NA in dummy mode); before, the answer was not read. An error when the box doesn't answer within 200 ms, or while get buttons start collects buttons in the background
+- readme: the buttonbox types (BITSI 2015, BITSI 2018 Duemilanove and Teensy), how to set their mode, port autodetect, and which send control commands each type supports
 
 ## [5.0.1] - 2026-10-18
 

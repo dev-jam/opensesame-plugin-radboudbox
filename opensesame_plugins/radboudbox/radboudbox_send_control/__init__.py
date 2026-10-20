@@ -35,7 +35,7 @@ controls = [
         "var": "command_value",
         "label": "Command Value",
         "name": "line_edit_command_value",
-        "info": "0-255, for commands with a value"
+        "info": "0-255 (Pulse Time: ms), for commands with a value"
     }, {
         "type": "text",
         "label": "<small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>"

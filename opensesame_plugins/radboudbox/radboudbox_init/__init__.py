@@ -35,7 +35,7 @@ controls = [
         "var": "extended_mode",
         "label": "Bitsi Extended Mode",
         "name": "checkbox_extended",
-        "info": "Needed for Send Control"
+        "info": "Must match the mode of the box; needed for Send Control"
     }, {
         "type": "text",
         "label": "<small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>"

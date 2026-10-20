@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - send control Pulse Out and Pulse Time are an error on a box with the 2015 firmware (when its ID string arrived): it doesn't have them, and may read the value as a new command
 - send control Analog In 1-4 reads the number the box sends back and logs it as `analog_in_<item name>` (NA in dummy mode); before, the answer was not read. An error when the box doesn't answer within 200 ms, or while get buttons start collects buttons in the background
 - readme: the buttonbox types (BITSI 2015, BITSI 2018 Duemilanove and Teensy), how to set their mode, port autodetect, and which send control commands each type supports
+- init raises an error when the latency timer of an FTDI port (BITSI 2015 and 2018 Duemilanove) is more than 1 ms: button presses could arrive up to 16 ms late. Read from sysfs on Linux and from the registry on Windows; a warning when it can't be read. The value is on the experiment as `radboudbox_latency_timer`
 
 ## [5.0.1] - 2026-10-18
 

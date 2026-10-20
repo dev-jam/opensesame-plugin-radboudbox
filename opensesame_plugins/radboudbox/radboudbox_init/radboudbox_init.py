@@ -19,6 +19,7 @@ __author__ = "Bob Rosbag"
 __license__ = "GPLv3"
 
 import os
+import sys
 
 from libopensesame.exceptions import OSException
 from libopensesame.oslogging import oslogger
@@ -28,9 +29,78 @@ from ..radboudbox_item import RadboudboxItem
 # Arduino Duemilanove), Arduino and Teensy (BITSI 2018)
 BUTTONBOX_VENDOR_IDS = {0x0403, 0x2341, 0x2A03, 0x16C0}
 
+FTDI_VENDOR_ID = 0x0403
+# The FTDI chip sends small amounts of data after its latency timer (ms)
+LATENCY_TIMER_MAX = 1
+SYSFS_USB_SERIAL = '/sys/bus/usb-serial/devices'
+LATENCY_TIMER_FIX = {
+    'linux': 'echo 1 | sudo tee {sysfs} (or permanently, a udev rule: '
+             'ACTION=="add", SUBSYSTEM=="usb-serial", DRIVER=="ftdi_sio", '
+             'ATTR{{latency_timer}}="1")',
+    'win32': 'Device Manager, Ports, {port}, Properties, Port Settings, '
+             'Advanced, Latency Timer: 1 ms',
+}
+
 # The mode is set on the box: hold two buttons while connecting it
 MODE_BUTTONS = ('BITSI 2015 and BITSI 2018 Duemilanove: A+H simple, B+H '
                 'extended; BITSI 2018 Teensy: A+E simple, B+E extended')
+
+
+def usb_port_info():
+    """Returns a function that gives pyserial's information on a port (also
+    through a symbolic link), or None.
+    """
+    from serial.tools import list_ports
+    usb_info = {}
+    for info in list_ports.comports():
+        usb_info[info.device] = info
+        usb_info[os.path.realpath(info.device)] = info
+    return lambda port: usb_info.get(port,
+                                     usb_info.get(os.path.realpath(port)))
+
+
+def read_latency_timer(info):
+    """Returns the latency timer (ms) of an FTDI port and where it is set,
+    or None for the timer when it can't be read.
+    """
+    if sys.platform.startswith('linux'):
+        path = os.path.join(SYSFS_USB_SERIAL, os.path.basename(info.device),
+                            'latency_timer')
+        try:
+            with open(path) as f:
+                return int(f.read()), path
+        except (OSError, ValueError):
+            return None, path
+    if sys.platform == 'win32':
+        return read_latency_timer_windows(info.device), 'registry'
+    return None, sys.platform
+
+
+def read_latency_timer_windows(port):
+    """The FTDI driver keeps the settings of each COM port in the registry:
+    FTDIBUS/<device>/<instance>/Device Parameters (LatencyTimer, PortName).
+    """
+    import winreg
+    path = r'SYSTEM\CurrentControlSet\Enum\FTDIBUS'
+    try:
+        ftdibus = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
+    except OSError:
+        return None
+    for i in range(winreg.QueryInfoKey(ftdibus)[0]):
+        device_name = winreg.EnumKey(ftdibus, i)
+        device = winreg.OpenKey(ftdibus, device_name)
+        for j in range(winreg.QueryInfoKey(device)[0]):
+            instance = winreg.EnumKey(device, j)
+            try:
+                parameters = winreg.OpenKey(
+                    device, instance + r'\Device Parameters')
+                port_name = winreg.QueryValueEx(parameters, 'PortName')[0]
+                if port_name.upper() == port.upper():
+                    return int(winreg.QueryValueEx(parameters,
+                                                   'LatencyTimer')[0])
+            except OSError:
+                continue
+    return None
 
 
 class RadboudboxInit(RadboudboxItem):
@@ -105,6 +175,7 @@ class RadboudboxInit(RadboudboxItem):
         self.experiment.radboudbox_id_string = id_string
         try:
             self._check_mode(id_string)
+            self._check_latency_timer(port)
         except OSException:
             radboudbox.close()
             raise
@@ -141,6 +212,34 @@ class RadboudboxInit(RadboudboxItem):
                 f"Change the init item, or switch the box: hold two buttons "
                 f"while connecting it ({MODE_BUTTONS})")
 
+    def _check_latency_timer(self, port):
+        """The FTDI chip of the BITSI 2015 and 2018 Duemilanove boxes sends
+        small amounts of data after its latency timer: 16 ms by default, so
+        button presses can arrive up to 16 ms late. It should be 1 ms; on
+        Windows it can change back.
+        """
+        info = usb_port_info()(port)
+        if info is None or info.vid != FTDI_VENDOR_ID:
+            return
+        latency, where = read_latency_timer(info)
+        self.experiment.radboudbox_latency_timer = latency
+        if latency is None:
+            oslogger.warning(
+                f'Could not read the latency timer of the FTDI port {port} '
+                f'({where}): it should be {LATENCY_TIMER_MAX} ms, otherwise '
+                f'button presses can arrive up to 16 ms late')
+            return
+        self._show_message(f'Latency timer of {port}: {latency} ms')
+        if latency > LATENCY_TIMER_MAX:
+            fix = LATENCY_TIMER_FIX.get(
+                'linux' if sys.platform.startswith('linux') else sys.platform,
+                'set the latency timer of the FTDI driver to 1 ms')
+            raise OSException(
+                f'The latency timer of the Radboud Buttonbox port {port} is '
+                f'{latency} ms: button presses can arrive up to {latency} ms '
+                f'late. Set it to {LATENCY_TIMER_MAX} ms: '
+                f'{fix.format(sysfs=where, port=info.device)}')
+
     def _find_port(self, ports):
         """Chooses a port from rusocsci's list of USB serial devices (the
         device connected last first). rusocsci takes any device, e.g. the
@@ -148,16 +247,9 @@ class RadboudboxInit(RadboudboxItem):
         Autodetect takes the first buttonbox, or else the first port without
         USB data (it can't be checked); a device id takes that position.
         """
-        from serial.tools import list_ports
         # On Windows, rusocsci returns the port names as bytes
         ports = [p.decode() if isinstance(p, bytes) else p for p in ports]
-        usb_info = {}
-        for info in list_ports.comports():
-            usb_info[info.device] = info
-            usb_info[os.path.realpath(info.device)] = info
-
-        def info(port):
-            return usb_info.get(port, usb_info.get(os.path.realpath(port)))
+        info = usb_port_info()
 
         def is_other_device(port):
             return info(port) is not None and info(port).vid is not None \
@@ -216,6 +308,7 @@ class RadboudboxInit(RadboudboxItem):
         self.experiment.radboudbox_get_buttons_locked = 0
         self.experiment.radboudbox_get_buttons = None
         self.experiment.radboudbox_id_string = None
+        self.experiment.radboudbox_latency_timer = None
 
         device_id = self.var.id
         port = self.var.port

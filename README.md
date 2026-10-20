@@ -62,6 +62,8 @@ Linux and Windows are supported (possibly also macOS, not tested). The plug-in n
 
 **Port.** With port *autodetect*, Init takes the first buttonbox it finds (an FTDI, Arduino or Teensy USB device). Other USB serial devices, such as the serial port of an audio interface, are skipped. A *Device id* takes that position in the list of USB serial devices (0 is the device connected last). To choose a port yourself, set *Port*, e.g. `/dev/ttyUSB0` or `COM3`.
 
+**Latency timer.** The FTDI chip of the BITSI 2015 and 2018 Duemilanove sends small amounts of data after its latency timer, 16 ms by default: button presses can then arrive up to 16 ms late. It must be 1 ms, and Init raises an error otherwise. On Windows, set it in the Device Manager (Ports, the COM port, Properties, Port Settings, Advanced, Latency Timer); it can change back, e.g. after a driver update. On Linux it is `/sys/bus/usb-serial/devices/ttyUSB0/latency_timer`. The Teensy box has no latency timer.
+
 **Triggers.** Send Trigger works on all boxes, in both modes. Its pulse mode sets the value, waits for the pulse time and sets 0, so it also works on the BITSI 2015.
 
 **Send Control** (extended mode only):

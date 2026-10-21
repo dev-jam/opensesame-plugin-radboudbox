@@ -87,10 +87,14 @@ def read_latency_timer_windows(port):
     except OSError:
         return None
     for i in range(winreg.QueryInfoKey(ftdibus)[0]):
-        device_name = winreg.EnumKey(ftdibus, i)
-        device = winreg.OpenKey(ftdibus, device_name)
-        for j in range(winreg.QueryInfoKey(device)[0]):
-            instance = winreg.EnumKey(device, j)
+        # A key that can't be read is skipped, as a port without the values
+        try:
+            device = winreg.OpenKey(ftdibus, winreg.EnumKey(ftdibus, i))
+            instances = [winreg.EnumKey(device, j)
+                         for j in range(winreg.QueryInfoKey(device)[0])]
+        except OSError:
+            continue
+        for instance in instances:
             try:
                 parameters = winreg.OpenKey(
                     device, instance + r'\Device Parameters')

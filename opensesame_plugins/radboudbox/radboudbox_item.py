@@ -24,9 +24,6 @@ from libopensesame.item import Item
 from libopensesame.oslogging import oslogger
 from openexp.keyboard import Keyboard
 
-# Interval (ms) for checking whether the background thread has finished
-POLL_TIME = 1
-
 
 class RadboudboxItem(Item):
     """Base class of the Radboud Buttonbox items."""
@@ -84,9 +81,12 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
         self._set_response_time()
 
     def _wait_until_unlocked(self):
-        """Waits until a get buttons start item has its response."""
-        while self.experiment.radboudbox_get_buttons_locked:
-            self.clock.sleep(POLL_TIME)
+        """Waits until a get buttons start item has its response. The thread
+        is joined, not polled: clock.sleep() of the legacy backend holds up
+        the other threads, which made the response time of the thread late.
+        """
+        if self.experiment.radboudbox_get_buttons_locked:
+            self.experiment.radboudbox_get_buttons_thread.join()
 
     def _wait_buttons(self):
         """Waits for a button and processes the response."""

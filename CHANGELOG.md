@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- fixed: a wait buttons item that waits for get buttons start to finish joins its thread instead of checking every ms; with the legacy backend, these checks held up the thread, and its response time came out 10-20 ms late (also in 4.6.0 and earlier)
+
 ## [5.1.0] - 2026-10-21
 
 - fixed: port autodetect takes the first buttonbox (FTDI, Arduino or Teensy USB device) instead of the device connected last; it took, for example, the serial port of an audio interface, and the experiment ran without the buttonbox (also in 4.6.0 and earlier)

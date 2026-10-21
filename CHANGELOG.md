@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - fixed: on Windows, a registry key of an FTDI device that can't be read made init fail with "An unexpected error occurred"; it is skipped, as intended (a warning when the latency timer can't be read)
 - changed: in dummy mode, `time_response_<item>` is the time of the key press, as `response_time` is; it was taken after processing the response (up to 1 ms later in tests)
 - code style: indentation and line length (no change in behavior)
+- readme: the name of the developer of RuSocSci (Wilbert van Ham)
 
 ## [5.1.0] - 2026-10-21
 

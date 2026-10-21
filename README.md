@@ -5,12 +5,12 @@ OpenSesame Plug-in: Radboud Buttonbox
 
 Copyright, 2022, Bob Rosbag
 
-This plugin makes use of the RuSocSci python package developed by Wilbert van der Ham. Radboud Buttonbox is developed by Pascal de Water. Exact references will follow in the future. 
+This plugin makes use of the RuSocSci python package developed by Wilbert van Ham. Radboud Buttonbox is developed by Pascal de Water. Exact references will follow in the future. 
   
   
 ## About
 
-The Technical Support Group (Radboud University, Social Sciences) developed an USB Arduino based Buttonbox which can be used for time accurate (1ms) button press, voice key, sound key registration and sending parallel port like triggers.
+The Technical Support Group (Radboud University, Social Sciences) developed a USB Arduino based Buttonbox which can be used for time accurate (1ms) button press, voice key, sound key registration and sending parallel port like triggers.
 Upper case A, B, C, D, E (, F, G, H) are used for key presses, and lower case a, b, c, d, e (, f, g, h) are used for key releases. Uppercase S is used for sound key detection and uppercase V for voice key.
 
 For more information:

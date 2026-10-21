@@ -128,7 +128,6 @@ class RadboudboxSendControl(RadboudboxItem):
             self.clock.sleep(PAUSE)
             self._show_message('Sound/voice calibration done!')
 
-
     def _read_analog_in(self):
         """Reads the number the box sends after Analog In, with rusocsci's
         waitButtons(): digits and the line end only, so button presses in

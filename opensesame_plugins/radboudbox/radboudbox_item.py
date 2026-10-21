@@ -65,6 +65,7 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
 
     def process_response(self, response_args):
         response, t1 = response_args
+        self.experiment.var.set(f'time_response_{self.name}', t1)
         if not response:
             response = 'NA'
         elif isinstance(response, list):
@@ -78,7 +79,6 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
         self._show_message('Dummy mode on, using keyboard')
         self._keyboard.flush()
         super().run()
-        self._set_response_time()
 
     def _wait_until_unlocked(self):
         """Waits until a get buttons start item has its response. The thread
@@ -96,11 +96,4 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
             timeout = self._timeout / 1000
         response = self.experiment.radboudbox.waitButtons(
             maxWait=timeout, buttonList=self._allowed_responses, flush=True)
-        t1 = self._set_response_time()
-        self.process_response((response, t1))
-
-    def _set_response_time(self, time=None):
-        if time is None:
-            time = self.clock.time()
-        self.experiment.var.set(f'time_response_{self.name}', time)
-        return time
+        self.process_response((response, self.clock.time()))

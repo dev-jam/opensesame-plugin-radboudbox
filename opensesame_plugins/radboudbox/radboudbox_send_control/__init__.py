@@ -7,29 +7,29 @@ category = "RadboudBox"
 # Defines the GUI controls
 controls = [
     {
-       "type": "combobox",
-       "var": "command",
-       "label": "Send Command",
-       "options": [
-           "Calibrate Sound",
-           "Calibrate Voice",
-           "Detect Sound",
-           "Detect Voice",
-           "Marker Out",
-           "Pulse Out",
-           "Pulse Time",
-           "Analog Out 1",
-           "Analog Out 2",
-           "Tone",
-           "Analog In 1",
-           "Analog In 2",
-           "Analog In 3",
-           "Analog In 4",
-           "LEDs Off",
-           "LEDs Input",
-           "LEDs Output"
-       ],
-       "name": "combobox_command"
+        "type": "combobox",
+        "var": "command",
+        "label": "Send Command",
+        "options": [
+            "Calibrate Sound",
+            "Calibrate Voice",
+            "Detect Sound",
+            "Detect Voice",
+            "Marker Out",
+            "Pulse Out",
+            "Pulse Time",
+            "Analog Out 1",
+            "Analog Out 2",
+            "Tone",
+            "Analog In 1",
+            "Analog In 2",
+            "Analog In 3",
+            "Analog In 4",
+            "LEDs Off",
+            "LEDs Input",
+            "LEDs Output"
+        ],
+        "name": "combobox_command"
     }, {
         "type": "line_edit",
         "var": "command_value",

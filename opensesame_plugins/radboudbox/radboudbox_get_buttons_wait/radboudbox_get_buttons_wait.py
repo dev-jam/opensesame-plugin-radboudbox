@@ -45,8 +45,7 @@ class RadboudboxGetButtonsWait(RadboudboxItem):
 
     def _check_start(self):
         if not hasattr(self.experiment, "radboudbox_get_buttons_start"):
-            raise OSException(
-                    '`Radboudbox Get Buttons Start` item is missing')
+            raise OSException('`Radboudbox Get Buttons Start` item is missing')
         if not self.experiment.radboudbox_get_buttons:
-            raise OSException(
-                    'Radboudbox not waiting for a button, you first have to start the buttonbox before waiting')
+            raise OSException('Radboudbox not waiting for a button, you first '
+                              'have to start the buttonbox before waiting')

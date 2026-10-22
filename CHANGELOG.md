@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.1.2] - 2026-10-22
 
 - fixed: send control Pulse Out and Pulse Time were an error on a BITSI 2015 with the 2015-11-18 firmware (ID string `BITSI_extend mode, Ready! 2015-11-18`), which has them (tested); they are now only an error with the 2014 firmware, whose ID string ends with `Ready!`
 - readme: the BITSI 2018 Duemilanove is not a separate box, but the BITSI 2015 with the 2018 firmware; the three firmware versions of the BITSI 2015 and their ID strings, and the send control commands tested with the 2015-11-18 firmware
@@ -127,7 +127,8 @@ Final release for OpenSesame 3 API
 
 - First release
 
-[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.1...HEAD
+[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.2...HEAD
+[5.1.2]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.1...5.1.2
 [5.1.1]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.0...5.1.1
 [5.1.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.0.1...5.1.0
 [5.0.1]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.0.0...5.0.1

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- fixed: send control Pulse Out and Pulse Time were an error on a BITSI 2015 with the 2015-11-18 firmware (ID string `BITSI_extend mode, Ready! 2015-11-18`), which has them (tested); they are now only an error with the 2014 firmware, whose ID string ends with `Ready!`
+- readme: the BITSI 2018 Duemilanove is not a separate box, but the BITSI 2015 with the 2018 firmware; the three firmware versions of the BITSI 2015 and their ID strings, and the send control commands tested with the 2015-11-18 firmware
+- init: the mode buttons in the error message name the boxes as BITSI 2015 (Duemilanove) and BITSI 2018 (Teensy)
+
 ## [5.1.1] - 2026-10-21
 
 - fixed: a wait buttons item that waits for get buttons start to finish joins its thread instead of checking every ms; with the legacy backend, these checks held up the thread, and its response time came out 10-20 ms late (also in 4.6.0 and earlier)

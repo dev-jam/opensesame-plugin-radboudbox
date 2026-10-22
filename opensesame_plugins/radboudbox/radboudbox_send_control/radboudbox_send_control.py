@@ -48,8 +48,9 @@ FLUSH_LIST = ['Detect Sound', 'Detect Voice']
 # Tone is one character: a value after it would be read as a new command
 VALUE_LIST = ['Marker Out', 'Pulse Out', 'Pulse Time', 'Analog Out 1', 'Analog Out 2']
 
-# Only in the 2018 firmware, whose ID string has a version (" w:2018")
-FIRMWARE_2018_LIST = ['Pulse Out', 'Pulse Time']
+# Not in the oldest firmware (2014), whose ID string ends with "Ready!";
+# newer firmware adds a version after it (" 2015-11-18", " w:2018")
+NEWER_FIRMWARE_LIST = ['Pulse Out', 'Pulse Time']
 
 PAUSE = 1000
 
@@ -74,15 +75,15 @@ class RadboudboxSendControl(RadboudboxItem):
         if self.command not in CMD_DICT:
             raise OSException(f"Unknown command '{self.command}', choose one "
                               f"of: {', '.join(CMD_DICT)}")
-        # The 2015 firmware ignores the command, and may read its value as
+        # The 2014 firmware ignores the command, and may read its value as
         # the start of a new command
         id_string = self.experiment.radboudbox_id_string
-        if self.command in FIRMWARE_2018_LIST and id_string is not None \
-                and 'Ready!' in id_string and ' w:' not in id_string:
+        if self.command in NEWER_FIRMWARE_LIST and id_string is not None \
+                and id_string.rstrip().endswith('Ready!'):
             raise OSException(
-                f"'{self.command}' needs a buttonbox with the 2018 firmware; "
-                f"this box has an older one ('{id_string}'). For a pulse, use "
-                f"Send Trigger with pulse mode")
+                f"'{self.command}' needs newer buttonbox firmware (2015-11-18 "
+                f"or 2018); this box has the 2014 firmware ('{id_string}'). "
+                f"For a pulse, use Send Trigger with pulse mode")
 
     def run(self):
         command_list = CMD_DICT[self.command]
@@ -137,7 +138,7 @@ class RadboudboxSendControl(RadboudboxItem):
         digits = ''
         t_end = self.clock.time() + ANALOG_IN_TIMEOUT
         while True:
-            # The 2015 firmware sends no line end: after the first digit, a
+            # The 2014 firmware sends no line end: after the first digit, a
             # short silence ends the answer
             wait = ANALOG_IN_QUIET if digits else t_end - self.clock.time()
             if wait <= 0:

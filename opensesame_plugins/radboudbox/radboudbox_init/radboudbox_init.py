@@ -26,7 +26,7 @@ from libopensesame.oslogging import oslogger
 from ..radboudbox_item import RadboudboxItem
 
 # USB vendor ids of the boards in the buttonboxes: FTDI (USB UART of the
-# Arduino Duemilanove), Arduino and Teensy (BITSI 2018)
+# Arduino Duemilanove, BITSI 2015), Arduino and Teensy (BITSI 2018)
 BUTTONBOX_VENDOR_IDS = {0x0403, 0x2341, 0x2A03, 0x16C0}
 
 FTDI_VENDOR_ID = 0x0403
@@ -42,8 +42,8 @@ LATENCY_TIMER_FIX = {
 }
 
 # The mode is set on the box: hold two buttons while connecting it
-MODE_BUTTONS = ('BITSI 2015 and BITSI 2018 Duemilanove: A+H simple, B+H '
-                'extended; BITSI 2018 Teensy: A+E simple, B+E extended')
+MODE_BUTTONS = ('BITSI 2015 (Duemilanove): A+H simple, B+H extended; '
+                'BITSI 2018 (Teensy): A+E simple, B+E extended')
 
 
 def usb_port_info():
@@ -217,7 +217,7 @@ class RadboudboxInit(RadboudboxItem):
                 f"while connecting it ({MODE_BUTTONS})")
 
     def _check_latency_timer(self, port):
-        """The FTDI chip of the BITSI 2015 and 2018 Duemilanove boxes sends
+        """The FTDI chip of the BITSI 2015 (Duemilanove) box sends
         small amounts of data after its latency timer: 16 ms by default, so
         button presses can arrive up to 16 ms late. It should be 1 ms; on
         Windows it can change back.

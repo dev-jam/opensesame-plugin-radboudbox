@@ -49,6 +49,9 @@ FIFO_SETTINGS = {'ForceFifoEnable': 0, 'RxFIFO': 1, 'TxFIFO': 1}
 FIFO_SETTING_NAMES = {'ForceFifoEnable': 'Use FIFO buffers',
                       'RxFIFO': 'Receive Buffer',
                       'TxFIFO': 'Transmit Buffer'}
+# What the driver uses when a setting isn't set
+FIFO_SETTING_DEFAULTS = {'ForceFifoEnable': 'on', 'RxFIFO': 'High',
+                         'TxFIFO': 'High'}
 FIFO_SETTINGS_FIX = ('Device Manager, Ports, {port}, Properties, Port '
                      'Settings, Advanced: first set Receive Buffer and '
                      'Transmit Buffer to Low (1), then uncheck Use FIFO '
@@ -124,7 +127,7 @@ def read_fifo_settings_windows(port, vid):
     """Windows keeps the settings of a USB serial port in the registry:
     USB/VID_<vid>&PID_<pid>/<instance>/Device Parameters (PortName, and the
     Advanced port settings ForceFifoEnable, RxFIFO and TxFIFO once they were
-    set). Returns these settings (None for a value that isn't there), or None
+    set). Returns these settings (None for a value that isn't set), or None
     when the port isn't found.
     """
     import winreg
@@ -157,9 +160,10 @@ def read_fifo_settings_windows(port, vid):
             settings = {}
             for setting in FIFO_SETTINGS:
                 try:
-                    settings[setting] = int(
-                        winreg.QueryValueEx(parameters, setting)[0])
-                except (OSError, ValueError):
+                    settings[setting] = winreg.QueryValueEx(parameters,
+                                                            setting)[0]
+                except OSError:
+                    # Not set: the driver uses its default (on, High)
                     settings[setting] = None
             return settings
     return None
@@ -317,16 +321,22 @@ class RadboudboxInit(RadboudboxItem):
         settings = read_fifo_settings_windows(info.device, info.vid)
         self.experiment.radboudbox_fifo_settings = settings
         fix = FIFO_SETTINGS_FIX.format(port=info.device)
-        if settings is None or None in settings.values():
+        if settings is None:
             oslogger.warning(
                 f'Could not read the FIFO settings of the Radboud Buttonbox '
-                f'port {port} from the registry ({settings}). They should be: '
-                f'{fix}')
+                f'port {port}: its registry key was not found or could not '
+                f'be read. They should be: {fix}')
             return
         self._show_message(f'FIFO settings of {port}: {settings}')
-        wrong = [f'{FIFO_SETTING_NAMES[setting]} is {value} ({setting})'
-                 for setting, value in settings.items()
-                 if value != FIFO_SETTINGS[setting]]
+        wrong = []
+        for setting, value in settings.items():
+            if value == FIFO_SETTINGS[setting]:
+                continue
+            if value is None:
+                value = (f'not set (default '
+                         f'{FIFO_SETTING_DEFAULTS[setting]})')
+            wrong.append(f'{FIFO_SETTING_NAMES[setting]} is {value} '
+                         f'({setting})')
         if wrong:
             raise OSException(
                 f'The FIFO settings of the Radboud Buttonbox port {port} are '

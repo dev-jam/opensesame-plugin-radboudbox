@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.3.0] - 2026-10-29
 
 - the latency timer error on Linux has the layout of the port settings error on Windows: the current value, the command that sets it, a udev rule that sets it permanently, and how to check it
 - on Linux, init warns when ModemManager runs and may use the BITSI 2018: the Teensy says it takes modem commands, so ModemManager opens its port when it is connected, unless a udev rule makes it ignore the box (`ID_MM_DEVICE_IGNORE`); the warning gives such a rule
@@ -140,7 +140,8 @@ Final release for OpenSesame 3 API
 
 - First release
 
-[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.2.0...HEAD
+[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.3.0...HEAD
+[5.3.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.2.0...5.3.0
 [5.2.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.2...5.2.0
 [5.1.2]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.1...5.1.2
 [5.1.1]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.0...5.1.1

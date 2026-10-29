@@ -34,11 +34,6 @@ FTDI_VENDOR_ID = 0x0403
 # The FTDI chip sends small amounts of data after its latency timer (ms)
 LATENCY_TIMER_MAX = 1
 SYSFS_USB_SERIAL = '/sys/bus/usb-serial/devices'
-LATENCY_TIMER_FIX = {
-    'linux': 'echo 1 | sudo tee {sysfs} (or permanently, a udev rule: '
-             'ACTION=="add", SUBSYSTEM=="usb-serial", DRIVER=="ftdi_sio", '
-             'ATTR{{latency_timer}}="1")',
-}
 
 # The FTDI driver keeps the Advanced port settings of a COM port (BITSI
 # 2015) in the Device Parameters of its FTDIBUS key. ConfigData holds the
@@ -79,10 +74,11 @@ COM_NUMBER_FIX = ('Device Manager, Ports, {port}, Properties, Port '
 # The error that lists the port settings of a box on Windows. OpenSesame
 # shows it as Markdown (and as text in the console): blank lines between
 # paragraphs, indented lines keep their line breaks
-PORT_SETTINGS_MESSAGE = (
+PORT_SETTINGS_CURRENT = (
     'The port settings of the Radboud Buttonbox on {port} are wrong:\n\n'
     'Current settings are:\n\n'
-    '{current}\n\n'
+    '{current}\n\n')
+PORT_SETTINGS_MESSAGE = PORT_SETTINGS_CURRENT + (
     'Please go to:\n\n'
     '    Device Manager > Ports (COM & LPT) > {device} > Port Settings > '
     'Advanced\n\n'
@@ -107,6 +103,21 @@ PORT_SETTINGS_FIX_2015 = (
     '    Minimum Read Timeout (msec): 0\n'
     '    Minimum Write Timeout (msec): 0\n\n'
     'Leave the other settings as they are.')
+
+# Linux: the latency timer of the BITSI 2015 is in sysfs, written by the
+# ftdi_sio driver; the chip starts at 16 ms when it is connected
+PORT_SETTINGS_MESSAGE_LINUX = PORT_SETTINGS_CURRENT + (
+    'Please run:\n\n'
+    '    echo 1 | sudo tee {sysfs}\n\n'
+    'This lasts until the box is disconnected. To set it permanently, add '
+    'a udev rule, then disconnect and reconnect the box:\n\n'
+    '    echo \'ACTION=="add", SUBSYSTEM=="usb-serial", DRIVER=="ftdi_sio", '
+    'ATTR{{latency_timer}}="1"\' | sudo tee '
+    '/etc/udev/rules.d/99-ftdi-latency-timer.rules\n'
+    '    sudo udevadm control --reload-rules\n\n'
+    'Now you should see:\n\n'
+    '    cat {sysfs}\n'
+    '    1')
 
 # The mode is set on the box: hold two buttons while connecting it
 MODE_BUTTONS = ('BITSI 2015 (Duemilanove): A+H simple, B+H extended; '
@@ -424,15 +435,12 @@ class RadboudboxInit(RadboudboxItem):
                 f'button presses can arrive up to 16 ms late')
             return
         self._show_message(f'Latency timer of {port}: {latency} ms')
+        # Only Linux has a value here (sysfs)
         if latency > LATENCY_TIMER_MAX:
-            fix = LATENCY_TIMER_FIX.get(
-                'linux' if sys.platform.startswith('linux') else sys.platform,
-                'set the latency timer of the FTDI driver to 1 ms')
-            raise OSException(
-                f'The latency timer of the Radboud Buttonbox port {port} is '
-                f'{latency} ms: button presses can arrive up to {latency} ms '
-                f'late. Set it to {LATENCY_TIMER_MAX} ms: '
-                f'{fix.format(sysfs=where, port=info.device)}')
+            raise OSException(PORT_SETTINGS_MESSAGE_LINUX.format(
+                port=info.device, sysfs=where,
+                current=port_settings_lines(
+                    [('Latency Timer (msec)', latency, False)])))
 
     def _check_ftdi_settings(self, port, info):
         """The BITSI 2015 (FTDI) box on Windows: the latency timer (see

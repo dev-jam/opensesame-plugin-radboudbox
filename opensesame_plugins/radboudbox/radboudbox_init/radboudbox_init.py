@@ -130,27 +130,28 @@ def read_latency_timer_windows(port):
     return None
 
 
-def read_fifo_settings_windows(port, vid):
-    """Windows keeps the settings of a USB serial port in the registry:
-    USB/VID_<vid>&PID_<pid>/<instance>/Device Parameters (PortName, and the
-    Advanced port settings ForceFifoEnable, RxFIFO and TxFIFO once they were
-    set). Returns these settings (None for a value that isn't set), or None
-    when the port isn't found.
+def find_port_parameters(path, prefix, info, is_device):
+    """Returns the Device Parameters key of a port in the registry: the
+    instance under path (HKLM, <device>/<instance>, device names that start
+    with prefix) whose PortName is the port. Windows keeps the keys of devices that were connected before, and
+    several can have the same PortName (two BITSI 2018 boxes both had COM4):
+    then is_device(device, instance) chooses the connected one. Returns None
+    when the port isn't found or can't be told apart.
     """
     import winreg
-    prefix = f'VID_{vid:04X}&'
     # A key that can't be read is skipped, as a port without the values
     try:
-        usb = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, REGISTRY_USB)
-        devices = [winreg.EnumKey(usb, i)
-                   for i in range(winreg.QueryInfoKey(usb)[0])]
+        bus = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
+        devices = [winreg.EnumKey(bus, i)
+                   for i in range(winreg.QueryInfoKey(bus)[0])]
     except OSError:
         return None
+    found = []
     for name in devices:
         if not name.upper().startswith(prefix):
             continue
         try:
-            device = winreg.OpenKey(usb, name)
+            device = winreg.OpenKey(bus, name)
             instances = [winreg.EnumKey(device, j)
                          for j in range(winreg.QueryInfoKey(device)[0])]
         except OSError:
@@ -162,18 +163,41 @@ def read_fifo_settings_windows(port, vid):
                 port_name = winreg.QueryValueEx(parameters, 'PortName')[0]
             except OSError:
                 continue
-            if port_name.upper() != port.upper():
-                continue
-            settings = {}
-            for setting in FIFO_SETTINGS:
-                try:
-                    settings[setting] = winreg.QueryValueEx(parameters,
-                                                            setting)[0]
-                except OSError:
-                    # Not set: the driver uses its default (on, High)
-                    settings[setting] = None
-            return settings
-    return None
+            if port_name.upper() == info.device.upper():
+                found.append((name, instance, parameters))
+    if len(found) > 1:
+        found = [key for key in found if is_device(key[0], key[1])]
+    return found[0][2] if len(found) == 1 else None
+
+
+def read_fifo_settings_windows(info):
+    """Windows keeps the settings of a USB serial port in the registry:
+    USB/VID_<vid>&PID_<pid>/<serial number>/Device Parameters (PortName, and
+    the Advanced port settings ForceFifoEnable, RxFIFO and TxFIFO once they
+    were set). Returns these settings (None for a value that isn't set), or
+    None when the port isn't found.
+    """
+    import winreg
+
+    def is_device(device, instance):
+        # pyserial takes the serial number from the instance (not for a
+        # composite device, MI_xx, whose instance is a Windows id)
+        return info.pid is not None and info.serial_number is not None \
+            and device.upper() == f'VID_{info.vid:04X}&PID_{info.pid:04X}' \
+            and instance.upper() == info.serial_number.upper()
+
+    parameters = find_port_parameters(REGISTRY_USB, f'VID_{info.vid:04X}&',
+                                      info, is_device)
+    if parameters is None:
+        return None
+    settings = {}
+    for setting in FIFO_SETTINGS:
+        try:
+            settings[setting] = winreg.QueryValueEx(parameters, setting)[0]
+        except OSError:
+            # Not set: the driver uses its default (on, High)
+            settings[setting] = None
+    return settings
 
 
 class RadboudboxInit(RadboudboxItem):
@@ -326,14 +350,16 @@ class RadboudboxInit(RadboudboxItem):
         if info is None or info.vid not in BUTTONBOX_VENDOR_IDS \
                 or info.vid == FTDI_VENDOR_ID:
             return
-        settings = read_fifo_settings_windows(info.device, info.vid)
+        settings = read_fifo_settings_windows(info)
         self.experiment.radboudbox_fifo_settings = settings
         fix = FIFO_SETTINGS_FIX.format(port=info.device)
         if settings is None:
             oslogger.warning(
                 f'Could not read the FIFO settings of the Radboud Buttonbox '
                 f'port {port}: its registry key was not found or could not '
-                f'be read. They should be: {fix}')
+                f'be read, or several keys have this port name and the '
+                f'connected box could not be told apart. They should be: '
+                f'{fix}')
             return
         self._show_message(f'FIFO settings of {port}: {settings}')
         wrong = []

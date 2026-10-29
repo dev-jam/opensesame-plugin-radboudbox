@@ -95,39 +95,30 @@ def read_latency_timer(info):
         except (OSError, ValueError):
             return None, path
     if sys.platform == 'win32':
-        return read_latency_timer_windows(info.device), 'registry'
+        return read_latency_timer_windows(info), 'registry'
     return None, sys.platform
 
 
-def read_latency_timer_windows(port):
+def read_latency_timer_windows(info):
     """The FTDI driver keeps the settings of each COM port in the registry:
-    FTDIBUS/<device>/<instance>/Device Parameters (LatencyTimer, PortName).
+    FTDIBUS/VID_<vid>+PID_<pid>+<serial number>/<instance>/Device Parameters
+    (LatencyTimer, PortName).
     """
     import winreg
-    path = r'SYSTEM\CurrentControlSet\Enum\FTDIBUS'
-    try:
-        ftdibus = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, path)
-    except OSError:
+
+    def is_device(device, instance):
+        return info.pid is not None and info.serial_number is not None \
+            and device.upper() == (f'VID_{info.vid:04X}+PID_{info.pid:04X}+'
+                                   f'{info.serial_number}').upper()
+
+    parameters = find_port_parameters(r'SYSTEM\CurrentControlSet\Enum\FTDIBUS',
+                                      f'VID_{info.vid:04X}+', info, is_device)
+    if parameters is None:
         return None
-    for i in range(winreg.QueryInfoKey(ftdibus)[0]):
-        # A key that can't be read is skipped, as a port without the values
-        try:
-            device = winreg.OpenKey(ftdibus, winreg.EnumKey(ftdibus, i))
-            instances = [winreg.EnumKey(device, j)
-                         for j in range(winreg.QueryInfoKey(device)[0])]
-        except OSError:
-            continue
-        for instance in instances:
-            try:
-                parameters = winreg.OpenKey(
-                    device, instance + r'\Device Parameters')
-                port_name = winreg.QueryValueEx(parameters, 'PortName')[0]
-                if port_name.upper() == port.upper():
-                    return int(winreg.QueryValueEx(parameters,
-                                                   'LatencyTimer')[0])
-            except OSError:
-                continue
-    return None
+    try:
+        return int(winreg.QueryValueEx(parameters, 'LatencyTimer')[0])
+    except (OSError, ValueError):
+        return None
 
 
 def find_port_parameters(path, prefix, info, is_device):

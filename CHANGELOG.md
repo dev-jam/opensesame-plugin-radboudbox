@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - init raises an error on Windows when the port of a BITSI 2018 (Teensy, a USB serial port) has Use FIFO buffers on, or a receive or transmit buffer other than Low (1) (registry values `ForceFifoEnable`, `RxFIFO` and `TxFIFO` of the port; a value that is not set counts as the default, FIFO buffers on and buffers High); the settings are read from the registry key of the connected box (by its USB serial number), also when another box had the same COM port name; a warning when the port's registry key can't be read or the connected box can't be told apart. The values are on the experiment as `radboudbox_fifo_settings`
 - init raises an error on Windows when the buttonbox port (both types) is COM10 or higher
+- fixed: on Windows, the latency timer of a BITSI 2015 was read from the registry key of another box when two boxes had the same COM port name; it is read from the key of the connected box (by its USB serial number), and a warning when it can't be told apart. A latency timer that is not a number, or a registry key that can't be read, is a warning instead of "An unexpected error occurred" (since 5.1.0)
 
 ## [5.1.2] - 2026-10-22
 

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 - the latency timer error on Linux has the layout of the port settings error on Windows: the current value, the command that sets it, a udev rule that sets it permanently, and how to check it
+- on Linux, init warns when ModemManager runs and may use the BITSI 2018: the Teensy says it takes modem commands, so ModemManager opens its port when it is connected, unless a udev rule makes it ignore the box (`ID_MM_DEVICE_IGNORE`); the warning gives such a rule
 
 ## [5.2.0] - 2026-10-29
 

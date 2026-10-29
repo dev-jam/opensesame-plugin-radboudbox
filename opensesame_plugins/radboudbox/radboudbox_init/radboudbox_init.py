@@ -119,6 +119,27 @@ PORT_SETTINGS_MESSAGE_LINUX = PORT_SETTINGS_CURRENT + (
     '    cat {sysfs}\n'
     '    1')
 
+# Linux: ModemManager probes a new cdc_acm port whose interface says it
+# takes modem (AT) commands (protocol 1-6), as the Teensy (BITSI 2018) does:
+# it opens the port and sends commands to the box. It ignores a device with
+# ID_MM_DEVICE_IGNORE=1 on the USB device or on the port (its mm-filter.c),
+# set by udev rules; udev keeps the properties of each device in its
+# database, /run/udev/data/c<major>:<minor>
+PROC = '/proc'
+SYSFS_TTY = '/sys/class/tty'
+UDEV_DATA = '/run/udev/data'
+MODEM_MANAGER_WARNING = (
+    'ModemManager is running and may use the Radboud Buttonbox on {port}: '
+    'when the box is connected, ModemManager can open its port and send '
+    'modem commands to it. To make ModemManager ignore the box, run:\n\n'
+    '    echo \'ATTRS{{idVendor}}=="{vid:04x}", ENV{{ID_MM_DEVICE_IGNORE}}="1", '
+    'ENV{{ID_MM_PORT_IGNORE}}="1"\' | sudo tee '
+    '/etc/udev/rules.d/99-radboudbox-modemmanager.rules\n'
+    '    sudo udevadm control --reload-rules\n\n'
+    'then disconnect and reconnect the box. For a Teensy, the udev rules '
+    'of PJRC (https://www.pjrc.com/teensy/00-teensy.rules) do the same. Or '
+    'remove ModemManager when you don\'t use a modem.')
+
 # The mode is set on the box: hold two buttons while connecting it
 MODE_BUTTONS = ('BITSI 2015 (Duemilanove): A+H simple, B+H extended; '
                 'BITSI 2018 (Teensy): A+E simple, B+E extended')
@@ -150,6 +171,56 @@ def port_settings_lines(settings):
             '' if correct is None
             else f' ({"correct" if correct else "incorrect"})')
         for name, value, correct in settings)
+
+
+def modem_manager_running():
+    """Whether a ModemManager process runs."""
+    try:
+        pids = [pid for pid in os.listdir(PROC) if pid.isdigit()]
+    except OSError:
+        return False
+    for pid in pids:
+        try:
+            with open(os.path.join(PROC, pid, 'comm')) as f:
+                if f.read().strip() == 'ModemManager':
+                    return True
+        except OSError:
+            continue
+    return False
+
+
+def probed_by_modem_manager(port):
+    """Whether ModemManager would probe the port: the protocol of its USB
+    interface says modem (AT) commands (1-6). The tty is in sysfs at
+    <interface>/tty/<name>. False when that can't be read.
+    """
+    tty = os.path.join(SYSFS_TTY, os.path.basename(os.path.realpath(port)))
+    interface = os.path.dirname(os.path.dirname(os.path.realpath(tty)))
+    try:
+        with open(os.path.join(interface, 'bInterfaceProtocol')) as f:
+            return 1 <= int(f.read(), 16) <= 6
+    except (OSError, ValueError):
+        return False
+
+
+def ignored_by_modem_manager(port):
+    """Whether udev set ID_MM_DEVICE_IGNORE=1 on the port's tty or on the
+    USB device above it (the devices in sysfs with a device number), as
+    udev rules for the Teensy do.
+    """
+    path = os.path.realpath(os.path.join(
+        SYSFS_TTY, os.path.basename(os.path.realpath(port))))
+    while path not in ('/', '/sys', '/sys/devices', ''):
+        try:
+            with open(os.path.join(path, 'dev')) as f:
+                device_id = f'c{f.read().strip()}'
+            with open(os.path.join(UDEV_DATA, device_id)) as f:
+                if 'E:ID_MM_DEVICE_IGNORE=1' in f.read().splitlines():
+                    return True
+        except OSError:
+            pass
+        path = os.path.dirname(path)
+    return False
 
 
 def usb_port_info():
@@ -401,7 +472,8 @@ class RadboudboxInit(RadboudboxItem):
         """Checks the settings of the buttonbox port: the latency timer
         (FTDI), and on Windows our lab settings (COM number, and for the
         BITSI 2018 the FIFO buffers). On Windows one error lists all
-        settings of the box.
+        settings of the box. On Linux, a warning when ModemManager may use
+        the BITSI 2018.
         """
         info = usb_port_info()(port)
         if info is not None and info.vid == FTDI_VENDOR_ID:
@@ -409,8 +481,22 @@ class RadboudboxInit(RadboudboxItem):
         elif sys.platform == 'win32' and info is not None \
                 and info.vid in BUTTONBOX_VENDOR_IDS:
             self._check_fifo_settings(port, info)
+        elif sys.platform.startswith('linux') and info is not None \
+                and info.vid in BUTTONBOX_VENDOR_IDS:
+            self._check_modem_manager(port, info)
         else:
             self._check_com_number(port)
+
+    def _check_modem_manager(self, port, info):
+        """The BITSI 2018 (Teensy) says it takes modem commands: a running
+        ModemManager opens its port when it is connected, unless udev rules
+        make it ignore the box.
+        """
+        if not modem_manager_running() or not probed_by_modem_manager(port) \
+                or ignored_by_modem_manager(port):
+            return
+        oslogger.warning(MODEM_MANAGER_WARNING.format(port=info.device,
+                                                      vid=info.vid))
 
     def _port_row(self, info):
         number = com_number(info.device)

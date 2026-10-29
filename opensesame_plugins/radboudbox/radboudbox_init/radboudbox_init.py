@@ -48,9 +48,9 @@ FIFO_SETTINGS = {'ForceFifoEnable': 0, 'RxFIFO': 1, 'TxFIFO': 1}
 FIFO_SETTING_NAMES = {'ForceFifoEnable': 'Use FIFO buffers',
                       'RxFIFO': 'Receive Buffer',
                       'TxFIFO': 'Transmit Buffer'}
-# What the driver uses when a setting isn't set
-FIFO_SETTING_DEFAULTS = {'ForceFifoEnable': 'on', 'RxFIFO': 'High',
-                         'TxFIFO': 'High'}
+# A setting that was never changed in the Device Manager isn't in the
+# registry: its default (Use FIFO buffers on, buffers High)
+FIFO_SETTING_DEFAULTS = {'ForceFifoEnable': 1, 'RxFIFO': 14, 'TxFIFO': 16}
 
 # Our lab setting for the buttonbox port on Windows: COM1-COM9
 COM_NUMBER_MAX = 9
@@ -217,8 +217,8 @@ def read_fifo_settings_windows(info):
     """Windows keeps the settings of a USB serial port in the registry:
     USB/VID_<vid>&PID_<pid>/<serial number>/Device Parameters (PortName, and
     the Advanced port settings ForceFifoEnable, RxFIFO and TxFIFO once they
-    were set). Returns these settings (None for a value that isn't set), or
-    None when the port isn't found.
+    were changed in the Device Manager). Returns these settings (the default
+    for a value that isn't set), or None when the port isn't found.
     """
     import winreg
 
@@ -238,8 +238,8 @@ def read_fifo_settings_windows(info):
         try:
             settings[setting] = winreg.QueryValueEx(parameters, setting)[0]
         except OSError:
-            # Not set: the driver uses its default (on, High)
-            settings[setting] = None
+            # Never changed: the default (on, High)
+            settings[setting] = FIFO_SETTING_DEFAULTS[setting]
     return settings
 
 
@@ -438,10 +438,7 @@ class RadboudboxInit(RadboudboxItem):
                                  'could not be read', None))
                 continue
             value = fifo[setting]
-            if value is None:
-                shown = (f'not set (Windows default: '
-                         f'{FIFO_SETTING_DEFAULTS[setting]})')
-            elif setting == 'ForceFifoEnable':
+            if setting == 'ForceFifoEnable':
                 shown = {0: 'off', 1: 'on'}.get(value, value)
             else:
                 shown = 'Low (1)' if value == 1 else value

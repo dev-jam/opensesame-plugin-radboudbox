@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- init raises an error on Windows when the port of a BITSI 2018 (Teensy, a USB serial port) has Use FIFO buffers on, or a receive or transmit buffer other than Low (1) (registry values `ForceFifoEnable`, `RxFIFO` and `TxFIFO` of the port); a warning when they can't be read. The values are on the experiment as `radboudbox_fifo_settings`
+
 ## [5.1.2] - 2026-10-22
 
 - fixed: send control Pulse Out and Pulse Time were an error on a BITSI 2015 with the 2015-11-18 firmware (ID string `BITSI_extend mode, Ready! 2015-11-18`), which has them (tested); they are now only an error with the 2014 firmware, whose ID string ends with `Ready!`

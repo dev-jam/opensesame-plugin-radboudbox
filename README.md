@@ -74,6 +74,8 @@ The sources of the 2014 and 2018 firmware, for the Duemilanove and the Teensy, a
 
 **Latency timer.** The FTDI chip of the BITSI 2015 sends small amounts of data after its latency timer, 16 ms by default: button presses can then arrive up to 16 ms late. It must be 1 ms, and Init raises an error otherwise. On Windows, set it in the Device Manager (Ports, the COM port, Properties, Port Settings, Advanced, Latency Timer); it can change back, e.g. after a driver update. On Linux it is `/sys/bus/usb-serial/devices/ttyUSB0/latency_timer`. The Teensy box has no latency timer.
 
+**FIFO buffers (Windows).** On Windows, the BITSI 2018 (Teensy) is a USB serial port (driver usbser.sys). Its port must have *Use FIFO buffers* off and the receive and transmit buffers at Low (1). Set them in the Device Manager (Ports, the COM port, Properties, Port Settings, Advanced): first set *Receive Buffer* and *Transmit Buffer* to Low (1), then uncheck *Use FIFO buffers*; unchecked first, the buffers stay at their values, greyed out. Init reads them from the registry (`ForceFifoEnable`, `RxFIFO` and `TxFIFO` in the port's `Device Parameters`) and raises an error when one of them is different. When they can't be read (e.g. they were never set), there is a warning in the log. The values are on the experiment as `radboudbox_fifo_settings`.
+
 **Triggers.** Send Trigger works on all boxes, in both modes. Its pulse mode sets the value, waits for the pulse time and sets 0, so it also works with the 2014 firmware.
 
 **Send Control** (extended mode only):

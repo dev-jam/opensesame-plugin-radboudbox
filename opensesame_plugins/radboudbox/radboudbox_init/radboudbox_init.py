@@ -41,6 +41,19 @@ LATENCY_TIMER_FIX = {
              'Advanced, Latency Timer: 1 ms',
 }
 
+# Windows keeps the Advanced port settings of a USB serial port (usbser.sys,
+# BITSI 2018) in its Device Parameters. Required: Use FIFO buffers off,
+# receive and transmit buffer Low (1)
+REGISTRY_USB = r'SYSTEM\CurrentControlSet\Enum\USB'
+FIFO_SETTINGS = {'ForceFifoEnable': 0, 'RxFIFO': 1, 'TxFIFO': 1}
+FIFO_SETTING_NAMES = {'ForceFifoEnable': 'Use FIFO buffers',
+                      'RxFIFO': 'Receive Buffer',
+                      'TxFIFO': 'Transmit Buffer'}
+FIFO_SETTINGS_FIX = ('Device Manager, Ports, {port}, Properties, Port '
+                     'Settings, Advanced: first set Receive Buffer and '
+                     'Transmit Buffer to Low (1), then uncheck Use FIFO '
+                     'buffers')
+
 # The mode is set on the box: hold two buttons while connecting it
 MODE_BUTTONS = ('BITSI 2015 (Duemilanove): A+H simple, B+H extended; '
                 'BITSI 2018 (Teensy): A+E simple, B+E extended')
@@ -104,6 +117,51 @@ def read_latency_timer_windows(port):
                                                    'LatencyTimer')[0])
             except OSError:
                 continue
+    return None
+
+
+def read_fifo_settings_windows(port, vid):
+    """Windows keeps the settings of a USB serial port in the registry:
+    USB/VID_<vid>&PID_<pid>/<instance>/Device Parameters (PortName, and the
+    Advanced port settings ForceFifoEnable, RxFIFO and TxFIFO once they were
+    set). Returns these settings (None for a value that isn't there), or None
+    when the port isn't found.
+    """
+    import winreg
+    prefix = f'VID_{vid:04X}&'
+    # A key that can't be read is skipped, as a port without the values
+    try:
+        usb = winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, REGISTRY_USB)
+        devices = [winreg.EnumKey(usb, i)
+                   for i in range(winreg.QueryInfoKey(usb)[0])]
+    except OSError:
+        return None
+    for name in devices:
+        if not name.upper().startswith(prefix):
+            continue
+        try:
+            device = winreg.OpenKey(usb, name)
+            instances = [winreg.EnumKey(device, j)
+                         for j in range(winreg.QueryInfoKey(device)[0])]
+        except OSError:
+            continue
+        for instance in instances:
+            try:
+                parameters = winreg.OpenKey(
+                    device, instance + r'\Device Parameters')
+                port_name = winreg.QueryValueEx(parameters, 'PortName')[0]
+            except OSError:
+                continue
+            if port_name.upper() != port.upper():
+                continue
+            settings = {}
+            for setting in FIFO_SETTINGS:
+                try:
+                    settings[setting] = int(
+                        winreg.QueryValueEx(parameters, setting)[0])
+                except (OSError, ValueError):
+                    settings[setting] = None
+            return settings
     return None
 
 
@@ -180,6 +238,7 @@ class RadboudboxInit(RadboudboxItem):
         try:
             self._check_mode(id_string)
             self._check_latency_timer(port)
+            self._check_fifo_settings(port)
         except OSException:
             radboudbox.close()
             raise
@@ -243,6 +302,36 @@ class RadboudboxInit(RadboudboxItem):
                 f'{latency} ms: button presses can arrive up to {latency} ms '
                 f'late. Set it to {LATENCY_TIMER_MAX} ms: '
                 f'{fix.format(sysfs=where, port=info.device)}')
+
+    def _check_fifo_settings(self, port):
+        """The BITSI 2018 (Teensy) box is a USB serial port (usbser.sys) on
+        Windows; our lab settings for its port are Use FIFO buffers off and
+        the receive and transmit buffers Low (1).
+        """
+        if sys.platform != 'win32':
+            return
+        info = usb_port_info()(port)
+        if info is None or info.vid not in BUTTONBOX_VENDOR_IDS \
+                or info.vid == FTDI_VENDOR_ID:
+            return
+        settings = read_fifo_settings_windows(info.device, info.vid)
+        self.experiment.radboudbox_fifo_settings = settings
+        fix = FIFO_SETTINGS_FIX.format(port=info.device)
+        if settings is None or None in settings.values():
+            oslogger.warning(
+                f'Could not read the FIFO settings of the Radboud Buttonbox '
+                f'port {port} from the registry ({settings}). They should be: '
+                f'{fix}')
+            return
+        self._show_message(f'FIFO settings of {port}: {settings}')
+        wrong = [f'{FIFO_SETTING_NAMES[setting]} is {value} ({setting})'
+                 for setting, value in settings.items()
+                 if value != FIFO_SETTINGS[setting]]
+        if wrong:
+            raise OSException(
+                f'The FIFO settings of the Radboud Buttonbox port {port} are '
+                f'wrong: {", ".join(wrong)}. Use FIFO buffers must be off '
+                f'(0) and the buffers Low (1): {fix}')
 
     def _find_port(self, ports):
         """Chooses a port from rusocsci's list of USB serial devices (the
@@ -313,6 +402,7 @@ class RadboudboxInit(RadboudboxItem):
         self.experiment.radboudbox_get_buttons = None
         self.experiment.radboudbox_id_string = None
         self.experiment.radboudbox_latency_timer = None
+        self.experiment.radboudbox_fifo_settings = None
 
         device_id = self.var.id
         port = self.var.port

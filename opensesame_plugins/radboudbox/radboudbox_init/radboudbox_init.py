@@ -19,6 +19,7 @@ __author__ = "Bob Rosbag"
 __license__ = "GPLv3"
 
 import os
+import re
 import sys
 
 from libopensesame.exceptions import OSException
@@ -56,6 +57,12 @@ FIFO_SETTINGS_FIX = ('Device Manager, Ports, {port}, Properties, Port '
                      'Settings, Advanced: first set Receive Buffer and '
                      'Transmit Buffer to Low (1), then uncheck Use FIFO '
                      'buffers')
+
+# Our lab setting for the buttonbox port on Windows: COM1-COM9
+COM_NUMBER_MAX = 9
+COM_NUMBER_FIX = ('Device Manager, Ports, {port}, Properties, Port '
+                  'Settings, Advanced, COM Port Number: a free number below '
+                  '10')
 
 # The mode is set on the box: hold two buttons while connecting it
 MODE_BUTTONS = ('BITSI 2015 (Duemilanove): A+H simple, B+H extended; '
@@ -243,6 +250,7 @@ class RadboudboxInit(RadboudboxItem):
             self._check_mode(id_string)
             self._check_latency_timer(port)
             self._check_fifo_settings(port)
+            self._check_com_number(port)
         except OSException:
             radboudbox.close()
             raise
@@ -342,6 +350,21 @@ class RadboudboxInit(RadboudboxItem):
                 f'The FIFO settings of the Radboud Buttonbox port {port} are '
                 f'wrong: {", ".join(wrong)}. Use FIFO buffers must be off '
                 f'(0) and the buffers Low (1): {fix}')
+
+    def _check_com_number(self, port):
+        """Our lab setting for the port of both boxes on Windows: a COM
+        number below 10.
+        """
+        if sys.platform != 'win32':
+            return
+        match = re.fullmatch(r'(?:\\\\\.\\)?COM(\d+)', port,
+                             re.IGNORECASE)
+        if match is None or int(match.group(1)) <= COM_NUMBER_MAX:
+            return
+        name = f'COM{match.group(1)}'
+        raise OSException(
+            f'The Radboud Buttonbox is on port {name}: the COM number must '
+            f'be below 10. {COM_NUMBER_FIX.format(port=name)}')
 
     def _find_port(self, ports):
         """Chooses a port from rusocsci's list of USB serial devices (the

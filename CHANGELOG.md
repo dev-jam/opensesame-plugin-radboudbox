@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 - init raises an error on Windows when the port of a BITSI 2018 (Teensy, a USB serial port) has Use FIFO buffers on, or a receive or transmit buffer other than Low (1) (registry values `ForceFifoEnable`, `RxFIFO` and `TxFIFO` of the port; a value that is not set counts as the default, FIFO buffers on and buffers High); a warning when the port's registry key can't be read. The values are on the experiment as `radboudbox_fifo_settings`
+- init raises an error on Windows when the buttonbox port (both types) is COM10 or higher
 
 ## [5.1.2] - 2026-10-22
 

@@ -40,6 +40,24 @@ LATENCY_TIMER_FIX = {
              'ATTR{{latency_timer}}="1")',
 }
 
+# The FTDI driver keeps the Advanced port settings of a COM port (BITSI
+# 2015) in the Device Parameters of its FTDIBUS key. ConfigData holds the
+# USB transfer sizes: byte 2 transmit, byte 3 receive, as (size / 64) - 1
+# (my registry exports: 0 is 64, 0x1f 2048 and 0x3f 4096 bytes)
+REGISTRY_FTDIBUS = r'SYSTEM\CurrentControlSet\Enum\FTDIBUS'
+FTDI_SETTINGS = {'RxTransferSize': 64, 'TxTransferSize': 64,
+                 'LatencyTimer': LATENCY_TIMER_MAX, 'MinReadTimeout': 0,
+                 'MinWriteTimeout': 0}
+FTDI_SETTING_NAMES = {'RxTransferSize': 'Receive (Bytes)',
+                      'TxTransferSize': 'Transmit (Bytes)',
+                      'LatencyTimer': 'Latency Timer (msec)',
+                      'MinReadTimeout': 'Minimum Read Timeout (msec)',
+                      'MinWriteTimeout': 'Minimum Write Timeout (msec)'}
+# A setting that isn't in the registry: the driver's default
+FTDI_SETTING_DEFAULTS = {'RxTransferSize': 4096, 'TxTransferSize': 4096,
+                         'LatencyTimer': 16, 'MinReadTimeout': 0,
+                         'MinWriteTimeout': 0}
+
 # Windows keeps the Advanced port settings of a USB serial port (usbser.sys,
 # BITSI 2018) in its Device Parameters. Required: Use FIFO buffers off,
 # receive and transmit buffer Low (1)
@@ -85,7 +103,9 @@ PORT_SETTINGS_FIX_2015 = (
     '    Port: COM3 (or another COM port below 10)\n'
     '    Receive (Bytes): 64\n'
     '    Transmit (Bytes): 64\n'
-    '    Latency Timer (msec): 1\n\n'
+    '    Latency Timer (msec): 1\n'
+    '    Minimum Read Timeout (msec): 0\n'
+    '    Minimum Write Timeout (msec): 0\n\n'
     'Leave the other settings as they are.')
 
 # The mode is set on the box: hold two buttons while connecting it
@@ -146,15 +166,16 @@ def read_latency_timer(info):
                 return int(f.read()), path
         except (OSError, ValueError):
             return None, path
-    if sys.platform == 'win32':
-        return read_latency_timer_windows(info), 'registry'
     return None, sys.platform
 
 
-def read_latency_timer_windows(info):
+def read_ftdi_settings_windows(info):
     """The FTDI driver keeps the settings of each COM port in the registry:
     FTDIBUS/VID_<vid>+PID_<pid>+<serial number>/<instance>/Device Parameters
-    (LatencyTimer, PortName).
+    (PortName, LatencyTimer, MinReadTimeout, MinWriteTimeout, and the USB
+    transfer sizes in ConfigData). Returns these settings (the default for
+    a value that isn't there, None for transfer sizes that can't be read),
+    or None when the port isn't found.
     """
     import winreg
 
@@ -163,14 +184,27 @@ def read_latency_timer_windows(info):
             and device.upper() == (f'VID_{info.vid:04X}+PID_{info.pid:04X}+'
                                    f'{info.serial_number}').upper()
 
-    parameters = find_port_parameters(r'SYSTEM\CurrentControlSet\Enum\FTDIBUS',
-                                      f'VID_{info.vid:04X}+', info, is_device)
+    parameters = find_port_parameters(REGISTRY_FTDIBUS, f'VID_{info.vid:04X}+',
+                                      info, is_device)
     if parameters is None:
         return None
+    settings = dict(FTDI_SETTING_DEFAULTS)
+    for setting in ('LatencyTimer', 'MinReadTimeout', 'MinWriteTimeout'):
+        try:
+            settings[setting] = winreg.QueryValueEx(parameters, setting)[0]
+        except OSError:
+            pass
     try:
-        return int(winreg.QueryValueEx(parameters, 'LatencyTimer')[0])
-    except (OSError, ValueError):
-        return None
+        config = winreg.QueryValueEx(parameters, 'ConfigData')[0]
+    except OSError:
+        config = None
+    if config is not None:
+        if isinstance(config, bytes) and len(config) >= 4:
+            settings['TxTransferSize'] = (config[2] + 1) * 64
+            settings['RxTransferSize'] = (config[3] + 1) * 64
+        else:
+            settings['TxTransferSize'] = settings['RxTransferSize'] = None
+    return settings
 
 
 def find_port_parameters(path, prefix, info, is_device):
@@ -378,6 +412,9 @@ class RadboudboxInit(RadboudboxItem):
         button presses can arrive up to 16 ms late. It should be 1 ms; on
         Windows it can change back.
         """
+        if sys.platform == 'win32':
+            self._check_ftdi_settings(port, info)
+            return
         latency, where = read_latency_timer(info)
         self.experiment.radboudbox_latency_timer = latency
         if latency is None:
@@ -385,24 +422,9 @@ class RadboudboxInit(RadboudboxItem):
                 f'Could not read the latency timer of the FTDI port {port} '
                 f'({where}): it should be {LATENCY_TIMER_MAX} ms, otherwise '
                 f'button presses can arrive up to 16 ms late')
-        else:
-            self._show_message(f'Latency timer of {port}: {latency} ms')
-        latency_ok = None if latency is None \
-            else latency <= LATENCY_TIMER_MAX
-        if sys.platform == 'win32':
-            settings = [
-                self._port_row(info),
-                ('Latency Timer (msec)',
-                 'could not be read' if latency is None else latency,
-                 latency_ok)]
-            if any(correct is False for _, _, correct in settings):
-                raise OSException(PORT_SETTINGS_MESSAGE.format(
-                    port=info.device,
-                    current=port_settings_lines(settings),
-                    device=device_manager_name(info, 'USB Serial Port'),
-                    fix=PORT_SETTINGS_FIX_2015))
             return
-        if latency_ok is False:
+        self._show_message(f'Latency timer of {port}: {latency} ms')
+        if latency > LATENCY_TIMER_MAX:
             fix = LATENCY_TIMER_FIX.get(
                 'linux' if sys.platform.startswith('linux') else sys.platform,
                 'set the latency timer of the FTDI driver to 1 ms')
@@ -411,6 +433,44 @@ class RadboudboxInit(RadboudboxItem):
                 f'{latency} ms: button presses can arrive up to {latency} ms '
                 f'late. Set it to {LATENCY_TIMER_MAX} ms: '
                 f'{fix.format(sysfs=where, port=info.device)}')
+
+    def _check_ftdi_settings(self, port, info):
+        """The BITSI 2015 (FTDI) box on Windows: the latency timer (see
+        above) and our lab settings for its port, a COM number below 10, USB
+        transfer sizes of 64 bytes and minimum read and write timeouts of 0.
+        """
+        ftdi = read_ftdi_settings_windows(info)
+        self.experiment.radboudbox_ftdi_settings = ftdi
+        latency = None if ftdi is None else ftdi['LatencyTimer']
+        self.experiment.radboudbox_latency_timer = latency
+        device = device_manager_name(info, 'USB Serial Port')
+        if ftdi is None:
+            oslogger.warning(
+                f'Could not read the settings of the FTDI port {port} from '
+                f'the registry: its key was not found or could not be read, '
+                f'or several keys have this port name and the connected box '
+                f'could not be told apart. The latency timer should be '
+                f'{LATENCY_TIMER_MAX} ms, otherwise button presses can arrive '
+                f'up to 16 ms late (Device Manager > Ports (COM & LPT) > '
+                f'{device} > Port Settings > Advanced)')
+        else:
+            self._show_message(f'FTDI settings of {port}: {ftdi}')
+        settings = [self._port_row(info)]
+        for setting, required in FTDI_SETTINGS.items():
+            value = None if ftdi is None else ftdi[setting]
+            if value is None:
+                settings.append((FTDI_SETTING_NAMES[setting],
+                                 'could not be read', None))
+                continue
+            if setting == 'LatencyTimer':
+                correct = isinstance(value, int) and 1 <= value <= required
+            else:
+                correct = value == required
+            settings.append((FTDI_SETTING_NAMES[setting], value, correct))
+        if any(correct is False for _, _, correct in settings):
+            raise OSException(PORT_SETTINGS_MESSAGE.format(
+                port=info.device, current=port_settings_lines(settings),
+                device=device, fix=PORT_SETTINGS_FIX_2015))
 
     def _check_fifo_settings(self, port, info):
         """The BITSI 2018 (Teensy) box is a USB serial port (usbser.sys) on
@@ -533,6 +593,7 @@ class RadboudboxInit(RadboudboxItem):
         self.experiment.radboudbox_id_string = None
         self.experiment.radboudbox_latency_timer = None
         self.experiment.radboudbox_fifo_settings = None
+        self.experiment.radboudbox_ftdi_settings = None
 
         device_id = self.var.id
         port = self.var.port

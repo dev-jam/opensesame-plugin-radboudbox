@@ -53,10 +53,24 @@ FIFO_SETTING_NAMES = {'ForceFifoEnable': 'Use FIFO buffers',
 # What the driver uses when a setting isn't set
 FIFO_SETTING_DEFAULTS = {'ForceFifoEnable': 'on', 'RxFIFO': 'High',
                          'TxFIFO': 'High'}
-FIFO_SETTINGS_FIX = ('Device Manager, Ports, {port}, Properties, Port '
-                     'Settings, Advanced: first set Receive Buffer and '
-                     'Transmit Buffer to Low (1), then uncheck Use FIFO '
-                     'buffers')
+FIFO_SETTINGS_PATH = ('Device Manager > Ports (COM & LPT) > {device} > Port '
+                      'Settings > Advanced')
+# OpenSesame shows the error as Markdown (and as text in the console): blank
+# lines between paragraphs, indented lines keep their line breaks
+FIFO_SETTINGS_MESSAGE = (
+    'The FIFO settings of the Radboud Buttonbox on {port} are wrong.\n\n'
+    'Current settings:\n\n'
+    '{current}\n\n'
+    'Please go to:\n\n'
+    '    {path}\n\n'
+    'Set the following, the order is important!\n\n'
+    '1. First set both "Receive Buffer" and "Transmit Buffer" to "Low (1)", '
+    'by moving the sliders all the way to the left.\n'
+    '2. Then uncheck "Use FIFO buffers".\n\n'
+    'Now you should see:\n\n'
+    '    Use FIFO buffers: off\n'
+    '    Receive Buffer: Low (1)\n'
+    '    Transmit Buffer: Low (1)')
 
 # Our lab setting for the buttonbox port on Windows: COM1-COM9
 COM_NUMBER_MAX = 9
@@ -343,30 +357,39 @@ class RadboudboxInit(RadboudboxItem):
             return
         settings = read_fifo_settings_windows(info)
         self.experiment.radboudbox_fifo_settings = settings
-        fix = FIFO_SETTINGS_FIX.format(port=info.device)
+        # The name in the Device Manager, e.g. USB Serial Device (COM4)
+        device = info.description
+        if not device or info.device not in device:
+            device = f'USB Serial Device ({info.device})'
+        path = FIFO_SETTINGS_PATH.format(device=device)
         if settings is None:
             oslogger.warning(
                 f'Could not read the FIFO settings of the Radboud Buttonbox '
                 f'port {port}: its registry key was not found or could not '
                 f'be read, or several keys have this port name and the '
                 f'connected box could not be told apart. They should be: '
-                f'{fix}')
+                f'Use FIFO buffers off, Receive Buffer and Transmit Buffer '
+                f'Low (1) ({path})')
             return
         self._show_message(f'FIFO settings of {port}: {settings}')
-        wrong = []
+        if all(value == FIFO_SETTINGS[setting]
+               for setting, value in settings.items()):
+            return
+        current = []
         for setting, value in settings.items():
-            if value == FIFO_SETTINGS[setting]:
-                continue
             if value is None:
-                value = (f'not set (default '
+                shown = (f'not set (Windows default: '
                          f'{FIFO_SETTING_DEFAULTS[setting]})')
-            wrong.append(f'{FIFO_SETTING_NAMES[setting]} is {value} '
-                         f'({setting})')
-        if wrong:
-            raise OSException(
-                f'The FIFO settings of the Radboud Buttonbox port {port} are '
-                f'wrong: {", ".join(wrong)}. Use FIFO buffers must be off '
-                f'(0) and the buffers Low (1): {fix}')
+            elif setting == 'ForceFifoEnable':
+                shown = {0: 'off', 1: 'on'}.get(value, value)
+            else:
+                shown = 'Low (1)' if value == 1 else value
+            correct = 'correct' if value == FIFO_SETTINGS[setting] \
+                else 'incorrect'
+            current.append(f'    {FIFO_SETTING_NAMES[setting]}: {shown} '
+                           f'({correct})')
+        raise OSException(FIFO_SETTINGS_MESSAGE.format(
+            port=info.device, current='\n'.join(current), path=path))
 
     def _check_com_number(self, port):
         """Our lab setting for the port of both boxes on Windows: a COM

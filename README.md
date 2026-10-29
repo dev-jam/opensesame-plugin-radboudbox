@@ -78,6 +78,8 @@ The sources of the 2014 and 2018 firmware, for the Duemilanove and the Teensy, a
 
 **COM port number (Windows).** The port of the buttonbox (both types) must be COM1 to COM9; Init raises an error for COM10 and higher. Change it in the Device Manager (Ports, the COM port, Properties, Port Settings, Advanced, COM Port Number) to a free number below 10.
 
+**Port settings error (Windows).** On Windows, Init lists all port settings of the box in one error: the COM port number and the latency timer for the BITSI 2015, the COM port number and the FIFO buffers for the BITSI 2018. Each setting is marked correct or incorrect, and the error says where to change them in the Device Manager and what to set. For the BITSI 2015 it also asks to set the USB transfer sizes (Receive and Transmit) to 64 bytes; Init doesn't check those yet.
+
 **Triggers.** Send Trigger works on all boxes, in both modes. Its pulse mode sets the value, waits for the pulse time and sets 0, so it also works with the 2014 firmware.
 
 **Send Control** (extended mode only):

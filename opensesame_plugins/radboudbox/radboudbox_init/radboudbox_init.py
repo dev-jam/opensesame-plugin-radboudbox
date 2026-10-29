@@ -38,8 +38,6 @@ LATENCY_TIMER_FIX = {
     'linux': 'echo 1 | sudo tee {sysfs} (or permanently, a udev rule: '
              'ACTION=="add", SUBSYSTEM=="usb-serial", DRIVER=="ftdi_sio", '
              'ATTR{{latency_timer}}="1")',
-    'win32': 'Device Manager, Ports, {port}, Properties, Port Settings, '
-             'Advanced, Latency Timer: 1 ms',
 }
 
 # Windows keeps the Advanced port settings of a USB serial port (usbser.sys,
@@ -53,24 +51,6 @@ FIFO_SETTING_NAMES = {'ForceFifoEnable': 'Use FIFO buffers',
 # What the driver uses when a setting isn't set
 FIFO_SETTING_DEFAULTS = {'ForceFifoEnable': 'on', 'RxFIFO': 'High',
                          'TxFIFO': 'High'}
-FIFO_SETTINGS_PATH = ('Device Manager > Ports (COM & LPT) > {device} > Port '
-                      'Settings > Advanced')
-# OpenSesame shows the error as Markdown (and as text in the console): blank
-# lines between paragraphs, indented lines keep their line breaks
-FIFO_SETTINGS_MESSAGE = (
-    'The FIFO settings of the Radboud Buttonbox on {port} are wrong.\n\n'
-    'Current settings:\n\n'
-    '{current}\n\n'
-    'Please go to:\n\n'
-    '    {path}\n\n'
-    'Set the following, the order is important!\n\n'
-    '1. First set both "Receive Buffer" and "Transmit Buffer" to "Low (1)", '
-    'by moving the sliders all the way to the left.\n'
-    '2. Then uncheck "Use FIFO buffers".\n\n'
-    'Now you should see:\n\n'
-    '    Use FIFO buffers: off\n'
-    '    Receive Buffer: Low (1)\n'
-    '    Transmit Buffer: Low (1)')
 
 # Our lab setting for the buttonbox port on Windows: COM1-COM9
 COM_NUMBER_MAX = 9
@@ -78,9 +58,67 @@ COM_NUMBER_FIX = ('Device Manager, Ports, {port}, Properties, Port '
                   'Settings, Advanced, COM Port Number: a free number below '
                   '10')
 
+# The error that lists the port settings of a box on Windows. OpenSesame
+# shows it as Markdown (and as text in the console): blank lines between
+# paragraphs, indented lines keep their line breaks
+PORT_SETTINGS_MESSAGE = (
+    'The port settings of the Radboud Buttonbox on {port} are wrong:\n\n'
+    'Current settings are:\n\n'
+    '{current}\n\n'
+    'Please go to:\n\n'
+    '    Device Manager > Ports (COM & LPT) > {device} > Port Settings > '
+    'Advanced\n\n'
+    '{fix}')
+PORT_SETTINGS_FIX_2018 = (
+    'Set the following when incorrect, the order is important!\n\n'
+    '1. First set "COM Port Number" to a COM port below 10.\n'
+    '2. Then set both "Receive Buffer" and "Transmit Buffer" to "Low (1)", '
+    'by moving the sliders all the way to the left.\n'
+    '3. Finally, uncheck "Use FIFO buffers".\n\n'
+    'Now you should see:\n\n'
+    '    Port: COM3 (or another COM port below 10)\n'
+    '    Use FIFO buffers: off\n'
+    '    Receive Buffer: Low (1)\n'
+    '    Transmit Buffer: Low (1)')
+PORT_SETTINGS_FIX_2015 = (
+    'Set the following when incorrect:\n\n'
+    '    Port: COM3 (or another COM port below 10)\n'
+    '    Receive (Bytes): 64\n'
+    '    Transmit (Bytes): 64\n'
+    '    Latency Timer (msec): 1\n\n'
+    'Leave the other settings as they are.')
+
 # The mode is set on the box: hold two buttons while connecting it
 MODE_BUTTONS = ('BITSI 2015 (Duemilanove): A+H simple, B+H extended; '
                 'BITSI 2018 (Teensy): A+E simple, B+E extended')
+
+
+def com_number(port):
+    """Returns the number of a Windows COM port (COM12 or \\\\.\\COM12),
+    or None for another name.
+    """
+    match = re.fullmatch(r'(?:\\\\\.\\)?COM(\d+)', port, re.IGNORECASE)
+    return None if match is None else int(match.group(1))
+
+
+def device_manager_name(info, default):
+    """The name of a port in the Device Manager, e.g. USB Serial Device
+    (COM4): pyserial's description is the device's friendly name.
+    """
+    if info.description and info.device in info.description:
+        return info.description
+    return f'{default} ({info.device})'
+
+
+def port_settings_lines(settings):
+    """Lines of (name, value, correct) for the error; correct is None when
+    the setting could not be read.
+    """
+    return '\n'.join(
+        f'    {name}: {value}' + (
+            '' if correct is None
+            else f' ({"correct" if correct else "incorrect"})')
+        for name, value, correct in settings)
 
 
 def usb_port_info():
@@ -277,9 +315,7 @@ class RadboudboxInit(RadboudboxItem):
         self.experiment.radboudbox_id_string = id_string
         try:
             self._check_mode(id_string)
-            self._check_latency_timer(port)
-            self._check_fifo_settings(port)
-            self._check_com_number(port)
+            self._check_port_settings(port)
         except OSException:
             radboudbox.close()
             raise
@@ -316,15 +352,32 @@ class RadboudboxInit(RadboudboxItem):
                 f"Change the init item, or switch the box: hold two buttons "
                 f"while connecting it ({MODE_BUTTONS})")
 
-    def _check_latency_timer(self, port):
+    def _check_port_settings(self, port):
+        """Checks the settings of the buttonbox port: the latency timer
+        (FTDI), and on Windows our lab settings (COM number, and for the
+        BITSI 2018 the FIFO buffers). On Windows one error lists all
+        settings of the box.
+        """
+        info = usb_port_info()(port)
+        if info is not None and info.vid == FTDI_VENDOR_ID:
+            self._check_latency_timer(port, info)
+        elif sys.platform == 'win32' and info is not None \
+                and info.vid in BUTTONBOX_VENDOR_IDS:
+            self._check_fifo_settings(port, info)
+        else:
+            self._check_com_number(port)
+
+    def _port_row(self, info):
+        number = com_number(info.device)
+        return 'Port', info.device, number is None or \
+            number <= COM_NUMBER_MAX
+
+    def _check_latency_timer(self, port, info):
         """The FTDI chip of the BITSI 2015 (Duemilanove) box sends
         small amounts of data after its latency timer: 16 ms by default, so
         button presses can arrive up to 16 ms late. It should be 1 ms; on
         Windows it can change back.
         """
-        info = usb_port_info()(port)
-        if info is None or info.vid != FTDI_VENDOR_ID:
-            return
         latency, where = read_latency_timer(info)
         self.experiment.radboudbox_latency_timer = latency
         if latency is None:
@@ -332,9 +385,24 @@ class RadboudboxInit(RadboudboxItem):
                 f'Could not read the latency timer of the FTDI port {port} '
                 f'({where}): it should be {LATENCY_TIMER_MAX} ms, otherwise '
                 f'button presses can arrive up to 16 ms late')
+        else:
+            self._show_message(f'Latency timer of {port}: {latency} ms')
+        latency_ok = None if latency is None \
+            else latency <= LATENCY_TIMER_MAX
+        if sys.platform == 'win32':
+            settings = [
+                self._port_row(info),
+                ('Latency Timer (msec)',
+                 'could not be read' if latency is None else latency,
+                 latency_ok)]
+            if any(correct is False for _, _, correct in settings):
+                raise OSException(PORT_SETTINGS_MESSAGE.format(
+                    port=info.device,
+                    current=port_settings_lines(settings),
+                    device=device_manager_name(info, 'USB Serial Port'),
+                    fix=PORT_SETTINGS_FIX_2015))
             return
-        self._show_message(f'Latency timer of {port}: {latency} ms')
-        if latency > LATENCY_TIMER_MAX:
+        if latency_ok is False:
             fix = LATENCY_TIMER_FIX.get(
                 'linux' if sys.platform.startswith('linux') else sys.platform,
                 'set the latency timer of the FTDI driver to 1 ms')
@@ -344,39 +412,32 @@ class RadboudboxInit(RadboudboxItem):
                 f'late. Set it to {LATENCY_TIMER_MAX} ms: '
                 f'{fix.format(sysfs=where, port=info.device)}')
 
-    def _check_fifo_settings(self, port):
+    def _check_fifo_settings(self, port, info):
         """The BITSI 2018 (Teensy) box is a USB serial port (usbser.sys) on
-        Windows; our lab settings for its port are Use FIFO buffers off and
-        the receive and transmit buffers Low (1).
+        Windows; our lab settings for its port are a COM number below 10,
+        Use FIFO buffers off and the receive and transmit buffers Low (1).
         """
-        if sys.platform != 'win32':
-            return
-        info = usb_port_info()(port)
-        if info is None or info.vid not in BUTTONBOX_VENDOR_IDS \
-                or info.vid == FTDI_VENDOR_ID:
-            return
-        settings = read_fifo_settings_windows(info)
-        self.experiment.radboudbox_fifo_settings = settings
-        # The name in the Device Manager, e.g. USB Serial Device (COM4)
-        device = info.description
-        if not device or info.device not in device:
-            device = f'USB Serial Device ({info.device})'
-        path = FIFO_SETTINGS_PATH.format(device=device)
-        if settings is None:
+        fifo = read_fifo_settings_windows(info)
+        self.experiment.radboudbox_fifo_settings = fifo
+        device = device_manager_name(info, 'USB Serial Device')
+        if fifo is None:
             oslogger.warning(
                 f'Could not read the FIFO settings of the Radboud Buttonbox '
                 f'port {port}: its registry key was not found or could not '
                 f'be read, or several keys have this port name and the '
                 f'connected box could not be told apart. They should be: '
                 f'Use FIFO buffers off, Receive Buffer and Transmit Buffer '
-                f'Low (1) ({path})')
-            return
-        self._show_message(f'FIFO settings of {port}: {settings}')
-        if all(value == FIFO_SETTINGS[setting]
-               for setting, value in settings.items()):
-            return
-        current = []
-        for setting, value in settings.items():
+                f'Low (1) (Device Manager > Ports (COM & LPT) > {device} > '
+                f'Port Settings > Advanced)')
+        else:
+            self._show_message(f'FIFO settings of {port}: {fifo}')
+        settings = [self._port_row(info)]
+        for setting in FIFO_SETTINGS:
+            if fifo is None:
+                settings.append((FIFO_SETTING_NAMES[setting],
+                                 'could not be read', None))
+                continue
+            value = fifo[setting]
             if value is None:
                 shown = (f'not set (Windows default: '
                          f'{FIFO_SETTING_DEFAULTS[setting]})')
@@ -384,24 +445,23 @@ class RadboudboxInit(RadboudboxItem):
                 shown = {0: 'off', 1: 'on'}.get(value, value)
             else:
                 shown = 'Low (1)' if value == 1 else value
-            correct = 'correct' if value == FIFO_SETTINGS[setting] \
-                else 'incorrect'
-            current.append(f'    {FIFO_SETTING_NAMES[setting]}: {shown} '
-                           f'({correct})')
-        raise OSException(FIFO_SETTINGS_MESSAGE.format(
-            port=info.device, current='\n'.join(current), path=path))
+            settings.append((FIFO_SETTING_NAMES[setting], shown,
+                             value == FIFO_SETTINGS[setting]))
+        if any(correct is False for _, _, correct in settings):
+            raise OSException(PORT_SETTINGS_MESSAGE.format(
+                port=info.device, current=port_settings_lines(settings),
+                device=device, fix=PORT_SETTINGS_FIX_2018))
 
     def _check_com_number(self, port):
-        """Our lab setting for the port of both boxes on Windows: a COM
-        number below 10.
+        """Our lab setting for the port on Windows, also when it isn't
+        known which box it is: a COM number below 10.
         """
         if sys.platform != 'win32':
             return
-        match = re.fullmatch(r'(?:\\\\\.\\)?COM(\d+)', port,
-                             re.IGNORECASE)
-        if match is None or int(match.group(1)) <= COM_NUMBER_MAX:
+        number = com_number(port)
+        if number is None or number <= COM_NUMBER_MAX:
             return
-        name = f'COM{match.group(1)}'
+        name = f'COM{number}'
         raise OSException(
             f'The Radboud Buttonbox is on port {name}: the COM number must '
             f'be below 10. {COM_NUMBER_FIX.format(port=name)}')

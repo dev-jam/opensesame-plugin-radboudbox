@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.2.0] - 2026-10-29
 
 - init raises an error on Windows when the port of a BITSI 2018 (Teensy, a USB serial port) has Use FIFO buffers on, or a receive or transmit buffer other than Low (1) (registry values `ForceFifoEnable`, `RxFIFO` and `TxFIFO` of the port; a value that is not in the registry, because it was never changed, counts as its default: FIFO buffers on, buffers High (14 and 16)); the settings are read from the registry key of the connected box (by its USB serial number), also when another box had the same COM port name; a warning when the port's registry key can't be read or the connected box can't be told apart. The values are on the experiment as `radboudbox_fifo_settings`
 - init raises an error on Windows when the buttonbox port (both types) is COM10 or higher
@@ -135,7 +135,8 @@ Final release for OpenSesame 3 API
 
 - First release
 
-[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.2...HEAD
+[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.2.0...HEAD
+[5.2.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.2...5.2.0
 [5.1.2]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.1...5.1.2
 [5.1.1]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.1.0...5.1.1
 [5.1.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.0.1...5.1.0

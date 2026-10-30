@@ -33,7 +33,13 @@ class RadboudboxSendTrigger(RadboudboxItem):
     def prepare(self):
         super().prepare()
         self._check_init()
-        self.pulse_mode = self.var.pulse_mode == 'yes'
+        pulse_mode = self.var.pulse_mode
+        # Otherwise a value such as 'Yes' from a variable would leave the
+        # trigger on the box instead of sending a pulse
+        if pulse_mode not in ('yes', 'no'):
+            raise OSException(f"Enable Pulse Mode should be 'yes' or 'no', "
+                              f"not '{pulse_mode}'")
+        self.pulse_mode = pulse_mode == 'yes'
 
     def run(self):
         # The value and pulse time may be set by an earlier item

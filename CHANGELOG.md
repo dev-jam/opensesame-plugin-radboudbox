@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- fixed: a send trigger *Enable Pulse Mode* value other than 'yes' or 'no' (e.g. 'Yes' from a variable) was treated as 'no', so the value stayed on the box instead of a pulse; it now gives an error in the prepare phase, also in dummy mode
+
 ## [5.4.0] - 2026-10-30
 
 - init has a new setting, *Wrong port settings*: *error* (the default, as before) stops the experiment when a port setting is wrong; *warning* writes the same text as a warning in the log, and the experiment continues

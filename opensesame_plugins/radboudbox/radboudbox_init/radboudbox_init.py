@@ -132,13 +132,36 @@ MODEM_MANAGER_WARNING = (
     'ModemManager is running and may use the Radboud Buttonbox on {port}: '
     'when the box is connected, ModemManager can open its port and send '
     'modem commands to it. To make ModemManager ignore the box, run:\n\n'
-    '    echo \'ATTRS{{idVendor}}=="{vid:04x}", ENV{{ID_MM_DEVICE_IGNORE}}="1", '
+    '    echo \'ATTRS{{idVendor}}=="{vid:04x}", '
+    'ENV{{ID_MM_DEVICE_IGNORE}}="1", '
     'ENV{{ID_MM_PORT_IGNORE}}="1"\' | sudo tee '
     '/etc/udev/rules.d/99-radboudbox-modemmanager.rules\n'
     '    sudo udevadm control --reload-rules\n\n'
     'then disconnect and reconnect the box. For a Teensy, the udev rules '
     'of PJRC (https://www.pjrc.com/teensy/00-teensy.rules) do the same. Or '
     'remove ModemManager when you don\'t use a modem.')
+
+# Log variables radboudbox_<name>, set by init: NA in dummy mode and for
+# settings that the box or the system doesn't have, unknown when they can't
+# be read
+LOG_VARIABLES = (
+    'type', 'port', 'driver', 'id_string', 'port_settings',
+    # BITSI 2015 (latency timer also on Linux)
+    'latency_timer', 'receive_bytes', 'transmit_bytes', 'min_read_timeout',
+    'min_write_timeout',
+    # BITSI 2018: Windows, Linux
+    'use_fifo_buffers', 'receive_buffer', 'transmit_buffer', 'modemmanager')
+FTDI_LOG_VARIABLES = {'LatencyTimer': 'latency_timer',
+                      'RxTransferSize': 'receive_bytes',
+                      'TxTransferSize': 'transmit_bytes',
+                      'MinReadTimeout': 'min_read_timeout',
+                      'MinWriteTimeout': 'min_write_timeout'}
+FIFO_LOG_VARIABLES = {'ForceFifoEnable': 'use_fifo_buffers',
+                      'RxFIFO': 'receive_buffer',
+                      'TxFIFO': 'transmit_buffer'}
+WRONG_PORT_SETTINGS_WARNING = (
+    '\n\nWrong port settings is set to warning in the init item: the '
+    'experiment continues.')
 
 # The mode is set on the box: hold two buttons while connecting it
 MODE_BUTTONS = ('BITSI 2015 (Duemilanove): A+H simple, B+H extended; '
@@ -260,14 +283,8 @@ def read_ftdi_settings_windows(info):
     or None when the port isn't found.
     """
     import winreg
-
-    def is_device(device, instance):
-        return info.pid is not None and info.serial_number is not None \
-            and device.upper() == (f'VID_{info.vid:04X}+PID_{info.pid:04X}+'
-                                   f'{info.serial_number}').upper()
-
     parameters = find_port_parameters(REGISTRY_FTDIBUS, f'VID_{info.vid:04X}+',
-                                      info, is_device)
+                                      info, is_ftdibus_device(info))
     if parameters is None:
         return None
     settings = dict(FTDI_SETTING_DEFAULTS)
@@ -289,12 +306,36 @@ def read_ftdi_settings_windows(info):
     return settings
 
 
-def find_port_parameters(path, prefix, info, is_device):
-    """Returns the Device Parameters key of a port in the registry: the
-    instance under path (HKLM, <device>/<instance>, device names that start
-    with prefix) whose PortName is the port. Windows keeps the keys of devices that were connected before, and
-    several can have the same PortName (two BITSI 2018 boxes both had COM4):
-    then is_device(device, instance) chooses the connected one. Returns None
+def is_usb_device(info):
+    """Returns is_device() for find_port_key() under Enum\\USB: pyserial
+    takes the serial number from the instance (not for a composite device,
+    MI_xx, whose instance is a Windows id).
+    """
+    def is_device(device, instance):
+        return info.pid is not None and info.serial_number is not None \
+            and device.upper() == f'VID_{info.vid:04X}&PID_{info.pid:04X}' \
+            and instance.upper() == info.serial_number.upper()
+    return is_device
+
+
+def is_ftdibus_device(info):
+    """Returns is_device() for find_port_key() under Enum\\FTDIBUS: the
+    serial number is in the device name.
+    """
+    def is_device(device, instance):
+        return info.pid is not None and info.serial_number is not None \
+            and device.upper() == (f'VID_{info.vid:04X}+PID_{info.pid:04X}+'
+                                   f'{info.serial_number}').upper()
+    return is_device
+
+
+def find_port_key(path, prefix, info, is_device):
+    """Returns the registry key of a port: the instance under path (HKLM,
+    <device>/<instance>, device names that start with prefix) whose
+    Device Parameters have the port as PortName. Windows keeps the keys of
+    devices that were connected before, and several can have the same
+    PortName (two BITSI 2018 boxes both had COM4): then
+    is_device(device, instance) chooses the connected one. Returns None
     when the port isn't found or can't be told apart.
     """
     import winreg
@@ -323,10 +364,57 @@ def find_port_parameters(path, prefix, info, is_device):
             except OSError:
                 continue
             if port_name.upper() == info.device.upper():
-                found.append((name, instance, parameters))
+                found.append((name, instance, device))
     if len(found) > 1:
         found = [key for key in found if is_device(key[0], key[1])]
-    return found[0][2] if len(found) == 1 else None
+    if len(found) != 1:
+        return None
+    try:
+        return winreg.OpenKey(found[0][2], found[0][1])
+    except OSError:
+        return None
+
+
+def find_port_parameters(path, prefix, info, is_device):
+    """Returns the Device Parameters key of a port (see find_port_key()),
+    or None.
+    """
+    import winreg
+    key = find_port_key(path, prefix, info, is_device)
+    if key is None:
+        return None
+    try:
+        return winreg.OpenKey(key, 'Device Parameters')
+    except OSError:
+        return None
+
+
+def read_driver(info):
+    """Returns the name of the port's driver (e.g. ftdi_sio or cdc_acm on
+    Linux, FTSER2K or usbser on Windows), or None.
+    """
+    if sys.platform.startswith('linux'):
+        driver = os.path.join(SYSFS_TTY,
+                              os.path.basename(os.path.realpath(info.device)),
+                              'device', 'driver')
+        if not os.path.exists(driver):
+            return None
+        return os.path.basename(os.path.realpath(driver))
+    if sys.platform != 'win32':
+        return None
+    import winreg
+    if info.vid == FTDI_VENDOR_ID:
+        key = find_port_key(REGISTRY_FTDIBUS, f'VID_{info.vid:04X}+', info,
+                            is_ftdibus_device(info))
+    else:
+        key = find_port_key(REGISTRY_USB, f'VID_{info.vid:04X}&', info,
+                            is_usb_device(info))
+    if key is None:
+        return None
+    try:
+        return str(winreg.QueryValueEx(key, 'Service')[0])
+    except OSError:
+        return None
 
 
 def read_fifo_settings_windows(info):
@@ -337,16 +425,8 @@ def read_fifo_settings_windows(info):
     for a value that isn't set), or None when the port isn't found.
     """
     import winreg
-
-    def is_device(device, instance):
-        # pyserial takes the serial number from the instance (not for a
-        # composite device, MI_xx, whose instance is a Windows id)
-        return info.pid is not None and info.serial_number is not None \
-            and device.upper() == f'VID_{info.vid:04X}&PID_{info.pid:04X}' \
-            and instance.upper() == info.serial_number.upper()
-
     parameters = find_port_parameters(REGISTRY_USB, f'VID_{info.vid:04X}&',
-                                      info, is_device)
+                                      info, is_usb_device(info))
     if parameters is None:
         return None
     settings = {}
@@ -367,6 +447,7 @@ class RadboudboxInit(RadboudboxItem):
         self.var.id = 'autodetect'
         self.var.port = 'autodetect'
         self.var.extended_mode = 'yes'
+        self.var.wrong_port_settings = 'error'
 
     def prepare(self):
         super().prepare()
@@ -429,6 +510,7 @@ class RadboudboxInit(RadboudboxItem):
                               f'Buttonbox, see the log for the reason')
         id_string = id_strings[0] if id_strings else None
         self.experiment.radboudbox_id_string = id_string
+        self._log('id_string', id_string)
         try:
             self._check_mode(id_string)
             self._check_port_settings(port)
@@ -473,28 +555,67 @@ class RadboudboxInit(RadboudboxItem):
         (FTDI), and on Windows our lab settings (COM number, and for the
         BITSI 2018 the FIFO buffers). On Windows one error lists all
         settings of the box. On Linux, a warning when ModemManager may use
-        the BITSI 2018.
+        the BITSI 2018. The box, its port and its settings are logged.
         """
         info = usb_port_info()(port)
+        self._log('port', port if info is None else info.device)
+        self._log('driver', None if info is None else read_driver(info))
         if info is not None and info.vid == FTDI_VENDOR_ID:
+            self._log('type', 'BITSI 2015')
             self._check_latency_timer(port, info)
-        elif sys.platform == 'win32' and info is not None \
-                and info.vid in BUTTONBOX_VENDOR_IDS:
-            self._check_fifo_settings(port, info)
-        elif sys.platform.startswith('linux') and info is not None \
-                and info.vid in BUTTONBOX_VENDOR_IDS:
-            self._check_modem_manager(port, info)
+        elif info is not None and info.vid in BUTTONBOX_VENDOR_IDS:
+            self._log('type', 'BITSI 2018')
+            if sys.platform == 'win32':
+                self._check_fifo_settings(port, info)
+            elif sys.platform.startswith('linux'):
+                # No port settings on Linux (cdc_acm)
+                self._log('port_settings', 'correct')
+                self._check_modem_manager(port, info)
+            else:
+                self._log('port_settings', None)
         else:
+            self._log('type', None)
             self._check_com_number(port)
+
+    def _log(self, name, value):
+        """Sets the log variable radboudbox_<name>; None is unknown."""
+        self.experiment.var.set(f'radboudbox_{name}',
+                                'unknown' if value is None else value)
+
+    def _port_settings_status(self, settings):
+        """Logs whether the settings (name, value, correct) are correct, and
+        returns True when one of them is incorrect.
+        """
+        corrects = [correct for _, _, correct in settings]
+        if False in corrects:
+            status = 'incorrect'
+        elif None in corrects:
+            status = None
+        else:
+            status = 'correct'
+        self._log('port_settings', status)
+        return status == 'incorrect'
+
+    def _wrong_port_settings(self, message):
+        """An error, or a warning when the init item says so."""
+        if self.wrong_port_settings == 'warning':
+            oslogger.warning(message + WRONG_PORT_SETTINGS_WARNING)
+            return
+        raise OSException(message)
 
     def _check_modem_manager(self, port, info):
         """The BITSI 2018 (Teensy) says it takes modem commands: a running
         ModemManager opens its port when it is connected, unless udev rules
         make it ignore the box.
         """
-        if not modem_manager_running() or not probed_by_modem_manager(port) \
-                or ignored_by_modem_manager(port):
+        if not modem_manager_running():
+            self._log('modemmanager', 'not running')
             return
+        if not probed_by_modem_manager(port) \
+                or ignored_by_modem_manager(port):
+            self._log('modemmanager', 'does not use the box')
+            return
+        self._log('modemmanager', 'may use the box')
         oslogger.warning(MODEM_MANAGER_WARNING.format(port=info.device,
                                                       vid=info.vid))
 
@@ -514,7 +635,9 @@ class RadboudboxInit(RadboudboxItem):
             return
         latency, where = read_latency_timer(info)
         self.experiment.radboudbox_latency_timer = latency
+        self._log('latency_timer', latency)
         if latency is None:
+            self._log('port_settings', None)
             oslogger.warning(
                 f'Could not read the latency timer of the FTDI port {port} '
                 f'({where}): it should be {LATENCY_TIMER_MAX} ms, otherwise '
@@ -522,11 +645,12 @@ class RadboudboxInit(RadboudboxItem):
             return
         self._show_message(f'Latency timer of {port}: {latency} ms')
         # Only Linux has a value here (sysfs)
-        if latency > LATENCY_TIMER_MAX:
-            raise OSException(PORT_SETTINGS_MESSAGE_LINUX.format(
+        settings = [('Latency Timer (msec)', latency,
+                     latency <= LATENCY_TIMER_MAX)]
+        if self._port_settings_status(settings):
+            self._wrong_port_settings(PORT_SETTINGS_MESSAGE_LINUX.format(
                 port=info.device, sysfs=where,
-                current=port_settings_lines(
-                    [('Latency Timer (msec)', latency, False)])))
+                current=port_settings_lines(settings)))
 
     def _check_ftdi_settings(self, port, info):
         """The BITSI 2015 (FTDI) box on Windows: the latency timer (see
@@ -552,6 +676,7 @@ class RadboudboxInit(RadboudboxItem):
         settings = [self._port_row(info)]
         for setting, required in FTDI_SETTINGS.items():
             value = None if ftdi is None else ftdi[setting]
+            self._log(FTDI_LOG_VARIABLES[setting], value)
             if value is None:
                 settings.append((FTDI_SETTING_NAMES[setting],
                                  'could not be read', None))
@@ -561,8 +686,8 @@ class RadboudboxInit(RadboudboxItem):
             else:
                 correct = value == required
             settings.append((FTDI_SETTING_NAMES[setting], value, correct))
-        if any(correct is False for _, _, correct in settings):
-            raise OSException(PORT_SETTINGS_MESSAGE.format(
+        if self._port_settings_status(settings):
+            self._wrong_port_settings(PORT_SETTINGS_MESSAGE.format(
                 port=info.device, current=port_settings_lines(settings),
                 device=device, fix=PORT_SETTINGS_FIX_2015))
 
@@ -588,6 +713,7 @@ class RadboudboxInit(RadboudboxItem):
         settings = [self._port_row(info)]
         for setting in FIFO_SETTINGS:
             if fifo is None:
+                self._log(FIFO_LOG_VARIABLES[setting], None)
                 settings.append((FIFO_SETTING_NAMES[setting],
                                  'could not be read', None))
                 continue
@@ -596,24 +722,29 @@ class RadboudboxInit(RadboudboxItem):
                 shown = {0: 'off', 1: 'on'}.get(value, value)
             else:
                 shown = 'Low (1)' if value == 1 else value
+            self._log(FIFO_LOG_VARIABLES[setting],
+                      shown if setting == 'ForceFifoEnable' else value)
             settings.append((FIFO_SETTING_NAMES[setting], shown,
                              value == FIFO_SETTINGS[setting]))
-        if any(correct is False for _, _, correct in settings):
-            raise OSException(PORT_SETTINGS_MESSAGE.format(
+        if self._port_settings_status(settings):
+            self._wrong_port_settings(PORT_SETTINGS_MESSAGE.format(
                 port=info.device, current=port_settings_lines(settings),
                 device=device, fix=PORT_SETTINGS_FIX_2018))
 
     def _check_com_number(self, port):
         """Our lab setting for the port on Windows, also when it isn't
-        known which box it is: a COM number below 10.
+        known which box it is: a COM number below 10. The other settings of
+        such a port are unknown.
         """
+        self._log('port_settings', None)
         if sys.platform != 'win32':
             return
         number = com_number(port)
         if number is None or number <= COM_NUMBER_MAX:
             return
+        self._log('port_settings', 'incorrect')
         name = f'COM{number}'
-        raise OSException(
+        self._wrong_port_settings(
             f'The Radboud Buttonbox is on port {name}: the COM number must '
             f'be below 10. {COM_NUMBER_FIX.format(port=name)}')
 
@@ -675,6 +806,11 @@ class RadboudboxInit(RadboudboxItem):
         if extended_mode not in ('yes', 'no'):
             raise OSException(f"Bitsi extended mode should be 'yes' or 'no', "
                               f"not '{extended_mode}'")
+        wrong_port_settings = self.var.wrong_port_settings
+        if wrong_port_settings not in ('error', 'warning'):
+            raise OSException(f"Wrong port settings should be 'error' or "
+                              f"'warning', not '{wrong_port_settings}'")
+        self.wrong_port_settings = wrong_port_settings
         self.dummy_mode = dummy_mode == 'yes'
         self.extended_mode = extended_mode == 'yes'
         self.verbose = verbose == 'yes'
@@ -688,6 +824,9 @@ class RadboudboxInit(RadboudboxItem):
         self.experiment.radboudbox_latency_timer = None
         self.experiment.radboudbox_fifo_settings = None
         self.experiment.radboudbox_ftdi_settings = None
+        # Log variables: NA until the box is checked (and in dummy mode)
+        for name in LOG_VARIABLES:
+            self.experiment.var.set(f'radboudbox_{name}', 'NA')
 
         device_id = self.var.id
         port = self.var.port

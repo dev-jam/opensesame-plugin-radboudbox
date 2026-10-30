@@ -82,6 +82,24 @@ The sources of the 2014 and 2018 firmware, for the Duemilanove and the Teensy, a
 
 **Port settings error (Windows).** On Windows, Init lists all port settings of the box in one error. BITSI 2015: COM port number (below 10), USB transfer sizes Receive and Transmit (64 bytes), latency timer (1 ms) and minimum read and write timeouts (0 ms). BITSI 2018: COM port number and the FIFO buffers. Each setting is marked correct or incorrect, and the error says where to change them in the Device Manager and what to set. A setting that was never changed is not in the registry and counts as the driver's default (BITSI 2015: transfer sizes 4096 bytes, latency timer 16 ms, timeouts 0). The values are on the experiment as `radboudbox_ftdi_settings` (BITSI 2015) and `radboudbox_fifo_settings` (BITSI 2018).
 
+**Wrong port settings.** *Wrong port settings* in the Init item chooses what happens when a port setting is wrong: *error* (the default) stops the experiment with the error above; *warning* writes the same text as a warning in the log, and the experiment continues. Use *warning* only for tests, e.g. on a computer where you can't change the settings: `radboudbox_port_settings` in the log file then says `incorrect`. The checks don't run in dummy mode.
+
+**Log variables.** Init sets these variables, so a logger with *Log all variables* writes them to the log file (`NA` in dummy mode and for settings the box or the system doesn't have, `unknown` when they can't be read):
+
+| Variable | Value |
+|---|---|
+| `radboudbox_type` | `BITSI 2015` or `BITSI 2018` (by the USB vendor id) |
+| `radboudbox_port` | e.g. `COM3` or `/dev/ttyUSB0` |
+| `radboudbox_driver` | e.g. `FTSER2K` or `usbser` (Windows), `ftdi_sio` or `cdc_acm` (Linux) |
+| `radboudbox_id_string` | the ID string the box sent (mode and firmware) |
+| `radboudbox_port_settings` | `correct`, `incorrect` or `unknown` |
+| `radboudbox_latency_timer` | ms (BITSI 2015) |
+| `radboudbox_receive_bytes`, `radboudbox_transmit_bytes` | USB transfer sizes (BITSI 2015, Windows) |
+| `radboudbox_min_read_timeout`, `radboudbox_min_write_timeout` | ms (BITSI 2015, Windows) |
+| `radboudbox_use_fifo_buffers` | `on` or `off` (BITSI 2018, Windows) |
+| `radboudbox_receive_buffer`, `radboudbox_transmit_buffer` | 1 (Low) to 14 or 16 (High) (BITSI 2018, Windows) |
+| `radboudbox_modemmanager` | `not running`, `does not use the box` or `may use the box` (BITSI 2018, Linux) |
+
 **Triggers.** Send Trigger works on all boxes, in both modes. Its pulse mode sets the value, waits for the pulse time and sets 0, so it also works with the 2014 firmware.
 
 **Send Control** (extended mode only):

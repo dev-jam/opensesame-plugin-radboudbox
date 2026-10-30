@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+- init has a new setting, *Wrong port settings*: *error* (the default, as before) stops the experiment when a port setting is wrong; *warning* writes the same text as a warning in the log, and the experiment continues
+- init logs the box and its port settings: `radboudbox_type`, `radboudbox_port`, `radboudbox_driver`, `radboudbox_id_string`, `radboudbox_port_settings` (correct, incorrect or unknown), and the settings themselves (latency timer, transfer sizes, timeouts, FIFO buffers, ModemManager); `NA` in dummy mode and for settings the box or system doesn't have
+
 ## [5.3.0] - 2026-10-29
 
 - the latency timer error on Linux has the layout of the port settings error on Windows: the current value, the command that sets it, a udev rule that sets it permanently, and how to check it

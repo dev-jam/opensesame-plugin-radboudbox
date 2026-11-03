@@ -1,0 +1,28 @@
+Source: opensesame-plugin-radboudbox
+Section: python
+Priority: optional
+Maintainer: Bob Rosbag <debian@bobrosbag.nl>
+Build-Depends: debhelper-compat (= 13),
+               dh-sequence-python3,
+               pybuild-plugin-pyproject,
+               python3-all,
+               python3-poetry-core,
+Standards-Version: 4.7.2
+Rules-Requires-Root: no
+Homepage: https://github.com/dev-jam/opensesame-plugin-radboudbox
+Vcs-Browser: https://github.com/dev-jam/opensesame-plugin-radboudbox/tree/debian/latest
+Vcs-Git: https://github.com/dev-jam/opensesame-plugin-radboudbox.git -b debian/latest
+
+Package: python3-opensesame-plugin-radboudbox
+Architecture: all
+# OpenSesame (and PsychoPy) are not in Debian yet: add them to Depends
+# when they are.
+Depends: ${misc:Depends},
+         ${python3:Depends},
+         python3-rusocsci,
+         python3-serial,
+Description: OpenSesame plugin for the Radboud Buttonbox
+ This plugin for the OpenSesame experiment builder collects
+ button responses, sound and voice detection, and sends
+ stimulus synchronization triggers with the Radboud Buttonbox
+ (BITSI), through the RuSocSci package.

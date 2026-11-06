@@ -1,3 +1,6 @@
+# Copyright (C) 2016-2026 Bob Rosbag <mail@bobrosbag.nl>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """Radboud Buttonbox - sends a control command to the buttonbox"""
 
 from .. import __version__

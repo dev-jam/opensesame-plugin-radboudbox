@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [5.4.2] - 2026-11-06
+
+- changed: the licence is stated as GPL-3.0-or-later (README, `__license__`); the source files carry a copyright notice instead of the header of the OpenSesame example plugin; the copyright years in the README run from the first release; the authors e-mail is mail@bobrosbag.nl
+
 ## [5.4.1] - 2026-11-03
 
 - fixed: a send trigger *Enable Pulse Mode* value other than 'yes' or 'no' (e.g. 'Yes' from a variable) was treated as 'no', so the value stayed on the box instead of a pulse; it now gives an error in the prepare phase, also in dummy mode
@@ -149,7 +153,8 @@ Final release for OpenSesame 3 API
 
 - First release
 
-[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.1...HEAD
+[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.2...HEAD
+[5.4.2]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.1...5.4.2
 [5.4.1]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.0...5.4.1
 [5.4.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.3.0...5.4.0
 [5.3.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.2.0...5.3.0

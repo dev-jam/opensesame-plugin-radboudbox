@@ -7,6 +7,8 @@ from .. import __version__
 
 # The category determines the group for the plugin in the item toolbar
 category = "RadboudBox"
+# The item type of this item in experiments made before 6.0.0
+aliases = ["radboudbox_get_buttons_start"]
 # Defines the GUI controls
 controls = [
     {

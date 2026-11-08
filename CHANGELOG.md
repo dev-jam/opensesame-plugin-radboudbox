@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- changed: the items that collect buttons have new names: radboudbox_wait_buttons is now radboudbox_collect_buttons_fg (foreground), radboudbox_get_buttons_start and radboudbox_get_buttons_wait are radboudbox_collect_buttons_bg_start and radboudbox_collect_buttons_bg_wait (background). Experiments made with an older version open and run as they are (the old names are aliases) and are saved with the new names; item names and log variables stay the same. An experiment saved with this version can't be used with an older version. Error messages name the items by their new names
+
 ## [5.4.3] - 2026-11-08
 
 - readme and package description: shorter description, typos and grammar in the list of items, the TSG link goes to the Buttonbox page (the same link as further on), documentation link with https

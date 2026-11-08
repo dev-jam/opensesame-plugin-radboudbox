@@ -25,7 +25,7 @@ __license__ = "GPL-3.0-or-later"
 from ..radboudbox_item import RadboudboxResponseItem
 
 
-class RadboudboxWaitButtons(RadboudboxResponseItem):
+class RadboudboxCollectButtonsFg(RadboudboxResponseItem):
 
     def run(self):
         self._t0 = self.set_item_onset()

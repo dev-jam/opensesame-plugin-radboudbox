@@ -85,9 +85,10 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
         super().run()
 
     def _wait_until_unlocked(self):
-        """Waits until a get buttons start item has its response. The thread
-        is joined, not polled: clock.sleep() of the legacy backend holds up
-        the other threads, which made the response time of the thread late.
+        """Waits until a collect buttons bg start item has its response. The
+        thread is joined, not polled: clock.sleep() of the legacy backend
+        holds up the other threads, which made the response time of the
+        thread late.
         """
         if self.experiment.radboudbox_get_buttons_locked:
             self.experiment.radboudbox_get_buttons_thread.join()

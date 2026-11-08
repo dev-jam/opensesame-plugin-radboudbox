@@ -26,11 +26,13 @@ from libopensesame.exceptions import OSException
 from ..radboudbox_item import RadboudboxItem
 
 
-class RadboudboxGetButtonsWait(RadboudboxItem):
+class RadboudboxCollectButtonsBgWait(RadboudboxItem):
 
     def prepare(self):
         super().prepare()
         self._check_init()
+        # The shared state keeps the names it had before 6.0.0 (get buttons
+        # start and wait): inline scripts may use them
         self.experiment.radboudbox_get_buttons_wait = True
 
     def run(self):
@@ -49,7 +51,7 @@ class RadboudboxGetButtonsWait(RadboudboxItem):
 
     def _check_start(self):
         if not hasattr(self.experiment, "radboudbox_get_buttons_start"):
-            raise OSException('`Radboudbox Get Buttons Start` item is missing')
+            raise OSException('`radboudbox_collect_buttons_bg_start` item is missing')
         if not self.experiment.radboudbox_get_buttons:
             raise OSException('Radboudbox not waiting for a button, you first '
                               'have to start the buttonbox before waiting')

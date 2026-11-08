@@ -109,9 +109,10 @@ class RadboudboxSendControl(RadboudboxItem):
                 # The answer comes on the port of the buttons
                 if self.experiment.radboudbox_get_buttons_locked:
                     raise OSException(
-                        f"'{self.command}' can't be read while Get Buttons "
-                        f"Start collects buttons in the background: put it "
-                        f"after Get Buttons Wait")
+                        f"'{self.command}' can't be read while "
+                        f"`radboudbox_collect_buttons_bg_start` collects "
+                        f"buttons in the background: put it after "
+                        f"`radboudbox_collect_buttons_bg_wait`")
                 self.experiment.radboudbox.clearEvents()
             if self.command in FLUSH_LIST:
                 self.experiment.radboudbox.clearEvents()

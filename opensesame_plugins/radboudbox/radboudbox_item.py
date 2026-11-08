@@ -46,12 +46,20 @@ class RadboudboxItem(Item):
 
 
 class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
-    """Base class of the items that collect a button response. In dummy mode,
+    """Base class of the items that collect button responses. In dummy mode,
     the keyboard is used instead.
+
+    The item collects up to number_of_responses responses within the
+    timeout (infinite: all responses until the timeout). The first one is
+    the response of the item (response_<item>, response_time_<item>,
+    correct_<item>, time_response_<item>); all of them are logged in
+    responses_<item> and their timestamps in time_responses_<item>,
+    separated by ';' ('NA' when there was none).
     """
 
     def reset(self):
         self.var.timeout = 'infinite'
+        self.var.number_of_responses = 1
 
     def prepare(self):
         self._check_init()
@@ -59,6 +67,23 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
         # rusocsci's waitButtons() fails with a timeout of 0
         if self._timeout == 0:
             raise OSException("Timeout should be more than 0 ms or 'infinite'")
+        self._number_of_responses = self._prepare_number_of_responses()
+
+    def _prepare_number_of_responses(self):
+        """Returns the number of responses to collect, or None to collect
+        them until the timeout.
+        """
+        value = self.var.number_of_responses
+        if value == 'infinite':
+            if self._timeout is None:
+                raise OSException("Number of responses 'infinite' needs a "
+                                  "timeout: with timeout 'infinite' the item "
+                                  "would wait forever")
+            return None
+        if not isinstance(value, int) or isinstance(value, bool) or value < 1:
+            raise OSException(f"Number of responses should be a whole number "
+                              f"of 1 or more, or 'infinite', not '{value}'")
+        return value
 
     def prepare_response_func(self):
         if self.dummy_mode:
@@ -82,7 +107,48 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
     def _collect_dummy_response(self):
         self._show_message('Dummy mode on, using keyboard')
         self._keyboard.flush()
-        super().run()
+        self._collect_responses(self._collect_response,
+                                lambda remaining: self._keyboard.get_key(
+                                    keylist=self._allowed_responses,
+                                    timeout=remaining))
+
+    def _collect_responses(self, wait_first, wait_next):
+        """Collects the responses and processes them. wait_first() waits
+        for the first response with the item's timeout, wait_next(remaining)
+        for the next one, with the rest of the timeout in ms (None: no
+        timeout); both return (response, timestamp), with response None
+        after a timeout.
+        """
+        start = self.clock.time()
+        response, t1 = wait_first()
+        responses = []
+        while response is not None:
+            responses.append((response, t1))
+            if self._number_of_responses is not None and \
+                    len(responses) >= self._number_of_responses:
+                break
+            remaining = None
+            if self._timeout is not None:
+                remaining = self._timeout - (self.clock.time() - start)
+                if remaining <= 0:
+                    break
+            response, t1 = wait_next(remaining)
+        # The first response is the response of the item
+        self.process_response(responses[0] if responses else (None, t1))
+        self._log_responses(responses)
+
+    def _log_responses(self, responses):
+        if responses:
+            keys = ';'.join(str(response) for response, _ in responses)
+            # A whole number as OpenSesame logs time_response_<item>
+            times = ';'.join(str(int(t)) if float(t).is_integer() else str(t)
+                             for _, t in responses)
+        else:
+            keys = times = 'NA'
+        self.experiment.var.set(f'responses_{self.name}', keys)
+        self.experiment.var.set(f'time_responses_{self.name}', times)
+        if len(responses) > 1:
+            self._show_message(f"Detected {len(responses)} responses: {keys}")
 
     def _wait_until_unlocked(self):
         """Waits until a collect buttons bg start item has its response. The
@@ -94,11 +160,34 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
             self.experiment.radboudbox_get_buttons_thread.join()
 
     def _wait_buttons(self):
-        """Waits for a button and processes the response."""
+        """Waits for the buttons and processes the responses. The box
+        sends every press and release; the timestamp of each is the moment
+        it is read. Only the first wait flushes the input.
+        """
         if self._timeout is None:
             timeout = float('inf')
         else:
             timeout = self._timeout / 1000
-        response = self.experiment.radboudbox.waitButtons(
-            maxWait=timeout, buttonList=self._allowed_responses, flush=True)
-        self.process_response((response, self.clock.time()))
+        self._collect_responses(
+            lambda: self._wait_button(timeout, flush=True),
+            lambda remaining: self._wait_button(
+                float('inf') if remaining is None else remaining / 1000,
+                flush=False))
+
+    def _wait_button(self, timeout, flush):
+        try:
+            response = self.experiment.radboudbox.waitButtons(
+                maxWait=timeout, buttonList=self._allowed_responses,
+                flush=flush)
+        except UnboundLocalError:
+            # rusocsci 0.9.2 raises this when the timeout has passed before
+            # its first read (its loop never runs): no response
+            response = None
+        except ValueError as e:
+            # Or pyserial's, when the timeout passes between rusocsci's
+            # check and its setting of the read timeout (negative)
+            if not str(e).startswith('Not a valid timeout'):
+                raise
+            response = None
+        t1 = self.clock.time()
+        return (response[0] if response else None), t1

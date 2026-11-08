@@ -41,6 +41,8 @@ This plugin has six items:
 
 The time of a response is logged as time_response_[item_name].
 
+**Number of responses** (radboudbox_collect_buttons_fg and radboudbox_collect_buttons_bg_start): the item collects up to this number of responses (the presses and releases in *Allowed responses*) within the timeout; *infinite* collects all of them until the timeout, which then can't be infinite. The timeout is the time for all responses together. The first response is the response of the item (response_[item_name], response_time_[item_name], correct_[item_name] and time_response_[item_name]); all responses are logged in responses_[item_name] (e.g. A;a;B) and their timestamps in time_responses_[item_name] (in ms, the same clock as time_response_[item_name]), separated by ';' (NA when there was none). The timestamp of a response is the moment the plugin reads it from the box, as for the first response: the box doesn't send times. The default, 1, collects one response, as the items did before.
+
 
 In **dummy mode** (an option of the Init item) the plugin runs without a buttonbox: the keyboard is used for button responses, and triggers and commands are not sent. radboudbox_collect_buttons_bg_start then waits for the key press itself, because the keyboard can't be read in the background.
 

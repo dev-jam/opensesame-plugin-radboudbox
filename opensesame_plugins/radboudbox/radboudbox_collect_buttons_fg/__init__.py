@@ -30,8 +30,14 @@ controls = [
         "name": "line_edit_timeout",
         "info": "In ms, or 'infinite'"
     }, {
+        "type": "line_edit",
+        "var": "number_of_responses",
+        "label": "Number of responses (1 or more, or infinite)",
+        "name": "line_edit_number_of_responses",
+        "info": "infinite: all until the timeout"
+    }, {
         "type": "text",
-        "label": "<b>IMPORTANT:</b> this is a foreground item, it will wait for the button press/release or till the timeout has ended before advancing to the next item."
+        "label": "<b>IMPORTANT:</b> this is a foreground item, it will wait for the button presses/releases (the number of responses) or till the timeout has ended before advancing to the next item."
     }, {
         "type": "text",
         "label": "<small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>"

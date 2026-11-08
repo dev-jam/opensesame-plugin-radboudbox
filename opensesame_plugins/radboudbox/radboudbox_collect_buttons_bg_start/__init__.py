@@ -30,6 +30,12 @@ controls = [
         "name": "line_edit_timeout",
         "info": "In ms, or 'infinite'"
     }, {
+        "type": "line_edit",
+        "var": "number_of_responses",
+        "label": "Number of responses (1 or more, or infinite)",
+        "name": "line_edit_number_of_responses",
+        "info": "infinite: all until the timeout"
+    }, {
         "type": "text",
         "label": "<b>IMPORTANT:</b> this is a multithreaded background item, it will immediately advance to the next item, it will NOT wait for the button press/release or till the timeout has ended."
     }, {

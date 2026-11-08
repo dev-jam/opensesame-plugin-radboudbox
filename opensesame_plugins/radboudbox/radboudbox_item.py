@@ -191,3 +191,40 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
             response = None
         t1 = self.clock.time()
         return (response[0] if response else None), t1
+
+
+class RadboudboxBackgroundControlItem(RadboudboxItem):
+    """Base class of the items that end the background collection of a
+    collect buttons bg start item.
+    """
+
+    # 'wait'; the shared state experiment.radboudbox_get_buttons_<role> is
+    # True once such an item has been prepared (the names of before 6.0.0:
+    # inline scripts may use them)
+    role = None
+
+    def prepare(self):
+        super().prepare()
+        self._check_init()
+        setattr(self.experiment, f'radboudbox_get_buttons_{self.role}', True)
+
+    def run(self):
+        self._check_start()
+        self.set_item_onset()
+        # In dummy mode, the start item has collected the response already
+        if not self.dummy_mode:
+            self.experiment.radboudbox_get_buttons_thread.join()
+            self.experiment.radboudbox_get_buttons_thread_running = 0
+        self.experiment.radboudbox_get_buttons = False
+        error = getattr(self.experiment, 'radboudbox_get_buttons_error', None)
+        if error is not None:
+            self.experiment.radboudbox_get_buttons_error = None
+            raise OSException(f'Collecting buttons in the background failed: '
+                              f'{error}') from error
+
+    def _check_start(self):
+        if not hasattr(self.experiment, "radboudbox_get_buttons_start"):
+            raise OSException('`radboudbox_collect_buttons_bg_start` item is missing')
+        if not self.experiment.radboudbox_get_buttons:
+            raise OSException('Radboudbox not waiting for a button, you first '
+                              'have to start the buttonbox before waiting')

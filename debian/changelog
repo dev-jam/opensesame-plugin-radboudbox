@@ -1,3 +1,9 @@
+opensesame-plugin-radboudbox (6.0.0-1) trixie; urgency=medium
+
+  * New upstream release.
+
+ -- Bob Rosbag <debian@bobrosbag.nl>  Sun, 08 Nov 2026 21:43:49 +0100
+
 opensesame-plugin-radboudbox (5.4.3-1) trixie; urgency=medium
 
   * New upstream release.

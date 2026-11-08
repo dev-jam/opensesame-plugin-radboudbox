@@ -1,7 +1,7 @@
 # Copyright (C) 2016-2026 Bob Rosbag <mail@bobrosbag.nl>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Radboud Buttonbox - starts button registration on the foreground"""
+"""Radboud Buttonbox - waits for a button press or release in the foreground"""
 
 from .. import __version__
 

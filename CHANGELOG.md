@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ## [Unreleased]
 
 - readme and package description: shorter description, typos and grammar in the list of items, the TSG link goes to the Buttonbox page (the same link as further on), documentation link with https
+- item descriptions (shown for new items) say what each item does, in the same form for all items; items in saved experiments keep their description
 
 ## [5.4.2] - 2026-11-06
 

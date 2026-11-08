@@ -1,7 +1,7 @@
-OpenSesame Plug-in: Radboud Buttonbox
+OpenSesame Plugin: Radboud Buttonbox
 ==========
 
-*An OpenSesame plug-in for collecting button responses, audio detection, voice key and sending stimulus synchronization triggers with the Radboud Buttonbox to data acquisition systems.*  
+*An OpenSesame plugin for the Radboud Buttonbox (BITSI): button responses, sound and voice key, and stimulus synchronization triggers to data acquisition systems.*  
 
 Copyright (C) 2016-2026 Bob Rosbag
 
@@ -15,35 +15,35 @@ Upper case A, B, C, D, E (, F, G, H) are used for key presses, and lower case a,
 
 For more information:
 
-<http://tsgdoc.socsci.ru.nl/index.php?title=ButtonBoxes>
+<https://tsgdoc.socsci.ru.nl/index.php/ButtonBox>
 
 
-This plug-in consists of foreground and background (multithreaded) items.
+This plugin consists of foreground and background (multithreaded) items.
 
 
 Difference between foreground and background:
 
-- **Foreground** item starts button/signal registration until it detects an allowed button or the set duration has passed. 
-- **Background** item consist of a 'start' and 'wait' item. These are fully multi-threaded. After the start of the button/signal registration, the item will immediately advance to the next item. When the experiment reaches the 'wait' item, it will wait until a button/signal has been detected by the 'start' item or the duration has passed.
+- The **foreground** item registers buttons/signals until it detects an allowed button or the set duration has passed.
+- The **background** items are a 'start' and a 'wait' item. These are fully multi-threaded. After the start of the button/signal registration, the item will immediately advance to the next item. When the experiment reaches the 'wait' item, it will wait until a button/signal has been detected by the 'start' item or the duration has passed.
 
 
-This plug-in has six items:
+This plugin has six items:
 
 - **Init** initialization of the buttonbox, this should be placed at the beginning of an experiment.
-- **Wait Buttons** waits for a button press or release before continuing to the next item in the experiment
-- **Get Buttons Start** starts a new thread which monitors for button presses/releases, it will directly advance to the next item in the experiment
-- **Get Buttons Wait** waits until the thread from 'Get Buttons Start' is finished (has detected a button press/release) before advancing to the next item in the experiment 
-- **Send Control** send control code to the buttonbox, for example 'Calibrate Sound', 'Detect Sound'
-- **Send Trigger** for sending triggers to hardware with a parallel port
+- **Wait Buttons** waits for a button press or release before continuing to the next item in the experiment.
+- **Get Buttons Start** starts a new thread which monitors for button presses/releases, it will directly advance to the next item in the experiment.
+- **Get Buttons Wait** waits until the thread from 'Get Buttons Start' is finished (has detected a button press/release) before advancing to the next item in the experiment.
+- **Send Control** sends a control command to the buttonbox, for example 'Calibrate Sound' or 'Detect Sound'.
+- **Send Trigger** sends a trigger to hardware with a parallel port, e.g. an EEG system.
 
 
-Timestamps can be found in the logs by the name: time_response_[item_name]
+The time of a response is logged as time_response_[item_name].
 
 
-In **dummy mode** (an option of the Init item) the plug-in runs without a buttonbox: the keyboard is used for button responses, and triggers and commands are not sent. Get Buttons Start then waits for the key press itself, because the keyboard can't be read in the background.
+In **dummy mode** (an option of the Init item) the plugin runs without a buttonbox: the keyboard is used for button responses, and triggers and commands are not sent. Get Buttons Start then waits for the key press itself, because the keyboard can't be read in the background.
 
 
-Linux and Windows are supported (possibly also macOS, not tested). The plug-in needs OpenSesame 4 (Python 3.10 or later) and the [RuSocSci](https://pypi.org/project/RuSocSci/) package, which is installed with it:
+Linux and Windows are supported (possibly also macOS, not tested). The plugin needs OpenSesame 4 (Python 3.10 or later) and the [RuSocSci](https://pypi.org/project/RuSocSci/) package, which is installed with it:
 
     pip install opensesame-plugin-radboudbox
   
@@ -129,4 +129,4 @@ The full license text is in the file `COPYING`, and is also available at <https:
 
 Installation instructions and documentation on OpenSesame are available on the documentation website:
 
-- <http://osdoc.cogsci.nl/>
+- <https://osdoc.cogsci.nl/>

@@ -471,6 +471,7 @@ class RadboudboxInit(RadboudboxItem):
         if getattr(self.experiment, 'radboudbox', None) is None:
             self._show_message("No active radboudbox")
             return
+        self._stop_background_collection()
         try:
             self.experiment.radboudbox.clearEvents()
             self.experiment.radboudbox.close()
@@ -479,6 +480,27 @@ class RadboudboxInit(RadboudboxItem):
         except Exception as e:
             # Cleanup also runs after an error: raising would hide it
             oslogger.warning(f'Failed to close the Radboud Buttonbox: {e}')
+
+    def _stop_background_collection(self):
+        """Ends a background collection that no bg wait or bg stop item
+        ended (e.g. it was skipped, or the experiment stopped early): its
+        responses may be missing from the log file.
+        """
+        if not getattr(self.experiment, 'radboudbox_get_buttons', None):
+            return
+        self.experiment.radboudbox_get_buttons = False
+        stop_event = getattr(self.experiment,
+                             'radboudbox_get_buttons_stop_event', None)
+        thread = getattr(self.experiment, 'radboudbox_get_buttons_thread', None)
+        if stop_event is not None:
+            stop_event.set()
+        if thread is not None:
+            thread.join(timeout=1)
+        oslogger.warning(
+            'A radboudbox_collect_buttons_bg_start item was still collecting '
+            'buttons at the end of the experiment: no '
+            'radboudbox_collect_buttons_bg_wait or _bg_stop item ended it, '
+            'so its responses may be missing from the log file')
 
     def _open(self):
         try:
@@ -824,6 +846,8 @@ class RadboudboxInit(RadboudboxItem):
         self.experiment.radboudbox_verbose = verbose
         self.experiment.radboudbox_get_buttons_locked = 0
         self.experiment.radboudbox_get_buttons = None
+        # 1 while a bg start item collects without end (only bg stop ends it)
+        self.experiment.radboudbox_get_buttons_infinite = 0
         self.experiment.radboudbox_id_string = None
         self.experiment.radboudbox_latency_timer = None
         self.experiment.radboudbox_fifo_settings = None

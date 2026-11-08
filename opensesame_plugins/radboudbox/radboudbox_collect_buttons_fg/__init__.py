@@ -1,12 +1,14 @@
 # Copyright (C) 2016-2026 Bob Rosbag <mail@bobrosbag.nl>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""Radboud Buttonbox - starts button registration in the background"""
+"""Radboud Buttonbox - waits for a button press or release in the foreground"""
 
 from .. import __version__
 
 # The category determines the group for the plugin in the item toolbar
 category = "RadboudBox"
+# The item type of this item in experiments made before 6.0.0
+aliases = ["radboudbox_wait_buttons"]
 # Defines the GUI controls
 controls = [
     {
@@ -28,8 +30,14 @@ controls = [
         "name": "line_edit_timeout",
         "info": "In ms, or 'infinite'"
     }, {
+        "type": "line_edit",
+        "var": "number_of_responses",
+        "label": "Number of responses (1 or more, or infinite)",
+        "name": "line_edit_number_of_responses",
+        "info": "infinite: all until the timeout"
+    }, {
         "type": "text",
-        "label": "<b>IMPORTANT:</b> this is a multithreaded background item, it will immediately advance to the next item, it will NOT wait for the button press/release or till the timeout has ended."
+        "label": "<b>IMPORTANT:</b> this is a foreground item, it will wait for the button presses/releases (the number of responses) or till the timeout has ended before advancing to the next item."
     }, {
         "type": "text",
         "label": "<small><b>Note:</b> Radboudbox init item at the begin of the experiment is needed for initialization of the buttonbox</small>"

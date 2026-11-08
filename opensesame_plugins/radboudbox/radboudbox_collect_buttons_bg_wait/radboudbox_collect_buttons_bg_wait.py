@@ -22,16 +22,9 @@ SPDX-License-Identifier: GPL-3.0-or-later
 __author__ = "Bob Rosbag"
 __license__ = "GPL-3.0-or-later"
 
-from ..radboudbox_item import RadboudboxResponseItem
+from ..radboudbox_item import RadboudboxBackgroundControlItem
 
 
-class RadboudboxWaitButtons(RadboudboxResponseItem):
+class RadboudboxCollectButtonsBgWait(RadboudboxBackgroundControlItem):
 
-    def run(self):
-        self._t0 = self.set_item_onset()
-        if self.dummy_mode:
-            self._collect_dummy_response()
-            return
-        self._wait_until_unlocked()
-        self._show_message('Start collecting buttons')
-        self._wait_buttons()
+    role = 'wait'

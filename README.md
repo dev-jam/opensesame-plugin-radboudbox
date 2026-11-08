@@ -24,23 +24,28 @@ This plugin consists of foreground and background (multithreaded) items.
 Difference between foreground and background:
 
 - The **foreground** item registers buttons/signals until it detects an allowed button or the set duration has passed.
-- The **background** items are a 'start' and a 'wait' item. These are fully multi-threaded. After the start of the button/signal registration, the item will immediately advance to the next item. When the experiment reaches the 'wait' item, it will wait until a button/signal has been detected by the 'start' item or the duration has passed.
+- The **background** items are a 'start', a 'wait' and a 'stop' item. These are fully multi-threaded. After the start of the button/signal registration, the item will immediately advance to the next item. When the experiment reaches the 'wait' item, it will wait until a button/signal has been detected by the 'start' item or the duration has passed; the 'stop' item ends the registration right away.
 
 
-This plugin has six items:
+This plugin has seven items:
 
-- **Init** initialization of the buttonbox, this should be placed at the beginning of an experiment.
-- **Wait Buttons** waits for a button press or release before continuing to the next item in the experiment.
-- **Get Buttons Start** starts a new thread which monitors for button presses/releases, it will directly advance to the next item in the experiment.
-- **Get Buttons Wait** waits until the thread from 'Get Buttons Start' is finished (has detected a button press/release) before advancing to the next item in the experiment.
-- **Send Control** sends a control command to the buttonbox, for example 'Calibrate Sound' or 'Detect Sound'.
-- **Send Trigger** sends a trigger to hardware with a parallel port, e.g. an EEG system.
+- **radboudbox_init** initialization of the buttonbox, this should be placed at the beginning of an experiment.
+- **radboudbox_collect_buttons_fg** (foreground) waits for a button press or release before continuing to the next item in the experiment.
+- **radboudbox_collect_buttons_bg_start** (background) starts a new thread which monitors for button presses/releases, it will directly advance to the next item in the experiment.
+- **radboudbox_collect_buttons_bg_wait** (background) waits until the thread from radboudbox_collect_buttons_bg_start is finished (has detected a button press/release) before advancing to the next item in the experiment.
+- **radboudbox_collect_buttons_bg_stop** (background) ends the thread from radboudbox_collect_buttons_bg_start right away (within 10 ms); the responses until then are logged. Use it instead of the wait item to end the registration at a moment of the experiment, or to end one without timeout.
+- **radboudbox_send_control** sends a control command to the buttonbox, for example 'Calibrate Sound' or 'Detect Sound'.
+- **radboudbox_send_trigger** sends a trigger to hardware with a parallel port, e.g. an EEG system.
+
+**Renamed items (6.0.0).** radboudbox_wait_buttons is now radboudbox_collect_buttons_fg, radboudbox_get_buttons_start is radboudbox_collect_buttons_bg_start and radboudbox_get_buttons_wait is radboudbox_collect_buttons_bg_wait. Experiments made with an older version open and run as they are, and OpenSesame saves them with the new item types; the names of the items, and so the variables in the log file, stay the same. An experiment saved with 6.0.0 or later needs 6.0.0 or later: an older version doesn't know the new item types (OpenSesame 4.1 then runs the experiment without these items, after a warning that a plugin is missing).
 
 
 The time of a response is logged as time_response_[item_name].
 
+**Number of responses** (radboudbox_collect_buttons_fg and radboudbox_collect_buttons_bg_start): the item collects up to this number of responses (the presses and releases in *Allowed responses*) within the timeout; *infinite* collects all of them until the timeout. The timeout is the time for all responses together. With *infinite* the timeout can be infinite too in radboudbox_collect_buttons_bg_start: a radboudbox_collect_buttons_bg_stop item then ends the registration (a radboudbox_collect_buttons_bg_wait item would wait forever, which is an error, and so is radboudbox_collect_buttons_fg while it runs); radboudbox_collect_buttons_fg needs a timeout. The first response is the response of the item (response_[item_name], response_time_[item_name], correct_[item_name] and time_response_[item_name]); all responses are logged in responses_[item_name] (e.g. A;a;B) and their timestamps in time_responses_[item_name] (in ms, the same clock as time_response_[item_name]), separated by ';' (NA when there was none). The timestamp of a response is the moment the plugin reads it from the box, as for the first response: the box doesn't send times. The default, 1, collects one response, as the items did before.
 
-In **dummy mode** (an option of the Init item) the plugin runs without a buttonbox: the keyboard is used for button responses, and triggers and commands are not sent. Get Buttons Start then waits for the key press itself, because the keyboard can't be read in the background.
+
+In **dummy mode** (an option of the Init item) the plugin runs without a buttonbox: the keyboard is used for button responses, and triggers and commands are not sent. radboudbox_collect_buttons_bg_start then waits for the key press itself, because the keyboard can't be read in the background (with number of responses and timeout infinite it collects one key, because nothing could end it).
 
 
 Linux and Windows are supported (possibly also macOS, not tested). The plugin needs OpenSesame 4 (Python 3.10 or later) and the [RuSocSci](https://pypi.org/project/RuSocSci/) package, which is installed with it:
@@ -107,7 +112,7 @@ The sources of the 2014 and 2018 firmware, for the Duemilanove and the Teensy, a
 | Command | Sends | 2015, fw 2014 | 2015, fw 2015-11-18 | 2015, fw 2018 | 2018 Teensy | Notes |
 |---|---|---|---|---|---|---|
 | Calibrate Sound / Voice | `C S` / `C V` | yes | not tested | yes | yes | the item waits 1000 ms: be silent |
-| Detect Sound / Voice | `D S` / `D V` | yes | not tested | yes | yes | the box sends `S` / `V` once; collect it with Wait Buttons or Get Buttons (allowed response `S` or `V`) |
+| Detect Sound / Voice | `D S` / `D V` | yes | not tested | yes | yes | the box sends `S` / `V` once; collect it with radboudbox_collect_buttons_fg or radboudbox_collect_buttons_bg_start (allowed response `S` or `V`) |
 | Marker Out | `M` value | yes | yes (tested) | yes | yes | the output keeps the value until the next marker |
 | Pulse Out | `P` value | no | yes (tested) | yes | yes | value for the pulse time, then 0 (default 100 ms) |
 | Pulse Time | `X` ms | no | yes (tested) | yes | yes | pulse time of Pulse Out, 0-255 ms |

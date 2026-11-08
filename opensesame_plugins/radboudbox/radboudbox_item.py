@@ -22,11 +22,17 @@ SPDX-License-Identifier: GPL-3.0-or-later
 __author__ = "Bob Rosbag"
 __license__ = "GPL-3.0-or-later"
 
+import time
+
 from libopensesame.base_response_item import BaseResponseItem
 from libopensesame.exceptions import OSException
 from libopensesame.item import Item
 from libopensesame.oslogging import oslogger
 from openexp.keyboard import Keyboard
+
+# Seconds that the background collection waits for the box per call, so
+# that a bg stop item ends it within this time
+STOP_POLL_TIME = 0.01
 
 
 class RadboudboxItem(Item):
@@ -57,6 +63,10 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
     separated by ';' ('NA' when there was none).
     """
 
+    # True for the bg start item, which collects in a thread that a bg stop
+    # item can end
+    background = False
+
     def reset(self):
         self.var.timeout = 'infinite'
         self.var.number_of_responses = 1
@@ -75,7 +85,9 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
         """
         value = self.var.number_of_responses
         if value == 'infinite':
-            if self._timeout is None:
+            # In the background a bg stop item can end it: a bg wait item
+            # that would wait forever raises when it runs
+            if self._timeout is None and not self.background:
                 raise OSException("Number of responses 'infinite' needs a "
                                   "timeout: with timeout 'infinite' the item "
                                   "would wait forever")
@@ -157,22 +169,48 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
         thread late.
         """
         if self.experiment.radboudbox_get_buttons_locked:
+            if getattr(self.experiment, 'radboudbox_get_buttons_infinite', 0):
+                raise OSException(
+                    '`radboudbox_collect_buttons_bg_start` collects buttons in '
+                    'the background without end (number of responses and '
+                    'timeout infinite): end it with a '
+                    '`radboudbox_collect_buttons_bg_stop` item first')
             self.experiment.radboudbox_get_buttons_thread.join()
 
-    def _wait_buttons(self):
+    def _wait_buttons(self, stop_event=None):
         """Waits for the buttons and processes the responses. The box
         sends every press and release; the timestamp of each is the moment
-        it is read. Only the first wait flushes the input.
+        it is read. Only the first wait flushes the input. With a
+        stop_event (background), the wait ends when it is set.
         """
         if self._timeout is None:
             timeout = float('inf')
         else:
             timeout = self._timeout / 1000
+        wait = self._wait_button if stop_event is None else \
+            lambda timeout, flush: self._wait_stoppable(timeout, flush,
+                                                        stop_event)
         self._collect_responses(
-            lambda: self._wait_button(timeout, flush=True),
-            lambda remaining: self._wait_button(
+            lambda: wait(timeout, flush=True),
+            lambda remaining: wait(
                 float('inf') if remaining is None else remaining / 1000,
                 flush=False))
+
+    def _wait_stoppable(self, timeout, flush, stop_event):
+        """_wait_button() in steps of STOP_POLL_TIME, until a button,
+        the timeout or stop_event. A button that comes during a step ends
+        it at once, so the timestamps are the same.
+        """
+        end = time.monotonic() + timeout
+        while not stop_event.is_set():
+            rest = end - time.monotonic()
+            if rest <= 0:
+                break
+            response, t1 = self._wait_button(min(rest, STOP_POLL_TIME), flush)
+            flush = False
+            if response is not None:
+                return response, t1
+        return None, self.clock.time()
 
     def _wait_button(self, timeout, flush):
         try:
@@ -198,9 +236,9 @@ class RadboudboxBackgroundControlItem(RadboudboxItem):
     collect buttons bg start item.
     """
 
-    # 'wait'; the shared state experiment.radboudbox_get_buttons_<role> is
-    # True once such an item has been prepared (the names of before 6.0.0:
-    # inline scripts may use them)
+    # 'wait' or 'stop'; the shared state
+    # experiment.radboudbox_get_buttons_<role> is True once such an item has
+    # been prepared (the names of before 6.0.0: inline scripts may use them)
     role = None
 
     def prepare(self):
@@ -210,9 +248,14 @@ class RadboudboxBackgroundControlItem(RadboudboxItem):
 
     def run(self):
         self._check_start()
+        if self.role == 'wait':
+            self._check_wait_ends()
         self.set_item_onset()
         # In dummy mode, the start item has collected the response already
         if not self.dummy_mode:
+            if self.role == 'stop':
+                self._show_message('Stop collecting buttons')
+                self.experiment.radboudbox_get_buttons_stop_event.set()
             self.experiment.radboudbox_get_buttons_thread.join()
             self.experiment.radboudbox_get_buttons_thread_running = 0
         self.experiment.radboudbox_get_buttons = False
@@ -226,5 +269,15 @@ class RadboudboxBackgroundControlItem(RadboudboxItem):
         if not hasattr(self.experiment, "radboudbox_get_buttons_start"):
             raise OSException('`radboudbox_collect_buttons_bg_start` item is missing')
         if not self.experiment.radboudbox_get_buttons:
-            raise OSException('Radboudbox not waiting for a button, you first '
-                              'have to start the buttonbox before waiting')
+            action = 'waiting' if self.role == 'wait' else 'stopping'
+            raise OSException(f'Radboudbox not waiting for a button, you first '
+                              f'have to start the buttonbox before {action}')
+
+    def _check_wait_ends(self):
+        # Also in dummy mode, so that a dummy test fails like the lab
+        if getattr(self.experiment, 'radboudbox_get_buttons_infinite', 0):
+            raise OSException(
+                '`radboudbox_collect_buttons_bg_wait` would wait forever: '
+                '`radboudbox_collect_buttons_bg_start` collects buttons '
+                'without end (number of responses and timeout infinite). Use '
+                'a `radboudbox_collect_buttons_bg_stop` item instead')

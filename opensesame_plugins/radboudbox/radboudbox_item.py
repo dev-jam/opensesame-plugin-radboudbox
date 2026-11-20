@@ -137,6 +137,14 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
             self._show_message(f"Detected press on button: '{response}'")
         self._show_message(f"Response time: {response_time} ms")
 
+    def var_info(self):
+        # BaseResponseItem lists response, correct, acc, avg_rt, ...
+        return super().var_info() + [
+            (f'time_response_{self.name}', '[Depends on response]'),
+            (f'responses_{self.name}', '[Depends on response]'),
+            (f'time_responses_{self.name}', '[Depends on response]'),
+        ]
+
     def _collect_dummy_response(self):
         self._show_message('Dummy mode on, using keyboard')
         self._keyboard.flush()

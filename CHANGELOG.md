@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - fixed: no response within the timeout (logged as NA) was always incorrect when the correct response was None, OpenSesame's name for a timeout (e.g. no-go trials); it is correct now for None as for NA
 - fixed: in dummy mode a key press was incorrect when the correct response had the other case (key 'a', correct response A); keys now match as in keyboard_response
 - changed: no response within the timeout is logged as None instead of NA (response, response_[item name], responses_[item name] and time_responses_[item name]), as OpenSesame's own response items log it, and only the correct response None matches it, as in OpenSesame: an experiment that uses NA as correct response for a timeout needs None instead, and analysis scripts that look for NA in these columns need to look for None
+- added: the variable inspector lists the variables of radboudbox_collect_buttons_fg and _bg_start before a run: also correct, acc, avg_rt and the other feedback variables, time_response_[item name], responses_[item name] and time_responses_[item name]
 
 ## [6.0.0] - 2026-11-08
 

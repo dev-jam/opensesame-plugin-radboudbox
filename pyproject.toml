@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "opensesame-plugin-radboudbox"
-version = "6.0.0"
+version = "7.0.0"
 description = "OpenSesame plugin for the Radboud Buttonbox (BITSI): button responses, sound and voice key, and triggers"
 authors = ["Bob Rosbag <mail@bobrosbag.nl>"]
 readme = "README.md"

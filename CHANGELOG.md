@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [7.0.1] - 2026-11-20
 
 - fixed: in dummy mode, a background collection that no radboudbox_collect_buttons_bg_wait or _bg_stop item ended gave no warning at the end of the experiment; it now gives the same warning as with the box
 - readme: where to place the background items: the start item and its wait or stop item in the same sequence, not the start item outside a loop and the wait or stop item inside it
@@ -180,7 +180,8 @@ Final release for OpenSesame 3 API
 
 - First release
 
-[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/7.0.0...HEAD
+[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/7.0.1...HEAD
+[7.0.1]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/7.0.0...7.0.1
 [7.0.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/6.0.0...7.0.0
 [6.0.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.3...6.0.0
 [5.4.3]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.2...5.4.3

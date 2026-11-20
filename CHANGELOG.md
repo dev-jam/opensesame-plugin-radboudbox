@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - fixed: in dummy mode, a background collection that no radboudbox_collect_buttons_bg_wait or _bg_stop item ended gave no warning at the end of the experiment; it now gives the same warning as with the box
 - readme: where to place the background items: the start item and its wait or stop item in the same sequence, not the start item outside a loop and the wait or stop item inside it
+- changed: the package needs pyserial 3.5 or later and RuSocSci 0.9.2 or later (was: any version); pip upgrades an older installed version
 
 ## [7.0.0] - 2026-11-20
 

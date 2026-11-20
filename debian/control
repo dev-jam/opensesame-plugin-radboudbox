@@ -19,8 +19,8 @@ Architecture: all
 # when they are.
 Depends: ${misc:Depends},
          ${python3:Depends},
-         python3-rusocsci,
-         python3-serial,
+         python3-rusocsci (>= 0.9.2),
+         python3-serial (>= 3.5),
 Description: OpenSesame plugin for the Radboud Buttonbox
  This plugin for the OpenSesame experiment builder collects
  button responses, sound and voice detection, and sends

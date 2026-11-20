@@ -87,7 +87,10 @@ class RadboudboxCollectButtonsBgStart(RadboudboxResponseItem):
                 not hasattr(self.experiment, "radboudbox_get_buttons_stop"):
             raise OSException('`radboudbox_collect_buttons_bg_wait` or '
                               '`radboudbox_collect_buttons_bg_stop` item is '
-                              'missing')
+                              'missing: put it in the same sequence as this '
+                              'item, not in a loop after it (OpenSesame '
+                              'prepares the item of a loop only when the '
+                              'loop runs)')
         if self.experiment.radboudbox_get_buttons:
             raise OSException('Radboudbox already waiting for a button, you '
                               'first have to stop the buttonbox before '

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.0.1] - 2026-11-20
+
+- fixed: in dummy mode, a background collection that no radboudbox_collect_buttons_bg_wait or _bg_stop item ended gave no warning at the end of the experiment; it now gives the same warning as with the box
+- readme: where to place the background items: the start item and its wait or stop item in the same sequence, not the start item outside a loop and the wait or stop item inside it
+- changed: the package needs pyserial 3.5 or later and RuSocSci 0.9.2 or later (was: any version); pip upgrades an older installed version
+- changed: the error of radboudbox_collect_buttons_bg_start that its wait or stop item is missing also says where to put that item: in the same sequence, not in a loop after it
+
 ## [7.0.0] - 2026-11-20
 
 - fixed: the responses of radboudbox_collect_buttons_fg and _bg_start did not count in OpenSesame's feedback variables (acc, avg_rt, total_responses, total_correct, total_response_time): a feedback item showed undefined, or only the responses of other items. They count now, as those of keyboard_response; acc and avg_rt of an experiment that also has other response items change accordingly
@@ -173,7 +180,8 @@ Final release for OpenSesame 3 API
 
 - First release
 
-[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/7.0.0...HEAD
+[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/7.0.1...HEAD
+[7.0.1]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/7.0.0...7.0.1
 [7.0.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/6.0.0...7.0.0
 [6.0.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.3...6.0.0
 [5.4.3]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.2...5.4.3

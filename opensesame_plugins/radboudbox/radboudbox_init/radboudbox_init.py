@@ -459,6 +459,9 @@ class RadboudboxInit(RadboudboxItem):
         self._init_var()
         if self.dummy_mode:
             self._show_message('Dummy mode enabled, prepare phase')
+            # A forgotten bg wait or stop item warns as with the box
+            self.experiment.cleanup_functions.append(
+                self._stop_background_collection)
             return
         self.experiment.radboudbox = self._open()
         self.clock.sleep(4000)

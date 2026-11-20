@@ -60,12 +60,17 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
     the response of the item (response_<item>, response_time_<item>,
     correct_<item>, time_response_<item>); all of them are logged in
     responses_<item> and their timestamps in time_responses_<item>,
-    separated by ';' ('NA' when there was none).
+    separated by ';' (None when there was none, as OpenSesame logs a
+    timeout).
     """
 
     # True for the bg start item, which collects in a thread that a bg stop
     # item can end
     background = False
+
+    # The responses count in OpenSesame's feedback variables (acc, avg_rt,
+    # total_responses, ...), as those of its own response items
+    process_feedback = True
 
     def reset(self):
         self.var.timeout = 'infinite'
@@ -104,17 +109,41 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
                                       timeout=self._timeout)
             return self._keyboard.get_key
 
+    def response_matches(self, test, ref):
+        """A timeout (None) matches the correct response None, as in
+        srbox and keyboard_response. In dummy mode a key matches its
+        synonyms (a and A), as in keyboard_response; the buttons of the box
+        stay case sensitive (A press, a release).
+        """
+        if test is None:
+            return 'None' in ref
+        if self.dummy_mode:
+            return any(r in self._keyboard.synonyms(test) for r in ref)
+        return test in ref
+
     def process_response(self, response_args):
         response, t1 = response_args
         self.experiment.var.set(f'time_response_{self.name}', t1)
         if not response:
-            response = 'NA'
+            # A timeout, logged as None as OpenSesame's own response items do
+            response = None
         elif isinstance(response, list):
             response = response[0]
         super().process_response((response, t1))
         response_time = round(t1 - self._t0, 1)
-        self._show_message(f"Detected press on button: '{response}'")
+        if response is None:
+            self._show_message('No response')
+        else:
+            self._show_message(f"Detected press on button: '{response}'")
         self._show_message(f"Response time: {response_time} ms")
+
+    def var_info(self):
+        # BaseResponseItem lists response, correct, acc, avg_rt, ...
+        return super().var_info() + [
+            (f'time_response_{self.name}', '[Depends on response]'),
+            (f'responses_{self.name}', '[Depends on response]'),
+            (f'time_responses_{self.name}', '[Depends on response]'),
+        ]
 
     def _collect_dummy_response(self):
         self._show_message('Dummy mode on, using keyboard')
@@ -156,7 +185,7 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
             times = ';'.join(str(int(t)) if float(t).is_integer() else str(t)
                              for _, t in responses)
         else:
-            keys = times = 'NA'
+            keys = times = None
         self.experiment.var.set(f'responses_{self.name}', keys)
         self.experiment.var.set(f'time_responses_{self.name}', times)
         if len(responses) > 1:

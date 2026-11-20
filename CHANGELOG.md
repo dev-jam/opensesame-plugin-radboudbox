@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [7.0.0] - 2026-11-20
+
+- fixed: the responses of radboudbox_collect_buttons_fg and _bg_start did not count in OpenSesame's feedback variables (acc, avg_rt, total_responses, total_correct, total_response_time): a feedback item showed undefined, or only the responses of other items. They count now, as those of keyboard_response; acc and avg_rt of an experiment that also has other response items change accordingly
+- fixed: no response within the timeout (logged as NA) was always incorrect when the correct response was None, OpenSesame's name for a timeout (e.g. no-go trials); it is correct now for None as for NA
+- fixed: in dummy mode a key press was incorrect when the correct response had the other case (key 'a', correct response A); keys now match as in keyboard_response
+- changed: no response within the timeout is logged as None instead of NA (response, response_[item name], responses_[item name] and time_responses_[item name]), as OpenSesame's own response items log it, and only the correct response None matches it, as in OpenSesame: an experiment that uses NA as correct response for a timeout needs None instead, and analysis scripts that look for NA in these columns need to look for None
+- added: the variable inspector lists the variables of radboudbox_collect_buttons_fg and _bg_start before a run: also correct, acc, avg_rt and the other feedback variables, time_response_[item name], responses_[item name] and time_responses_[item name]
+
 ## [6.0.0] - 2026-11-08
 
 - changed: the items that collect buttons have new names: radboudbox_wait_buttons is now radboudbox_collect_buttons_fg (foreground), radboudbox_get_buttons_start and radboudbox_get_buttons_wait are radboudbox_collect_buttons_bg_start and radboudbox_collect_buttons_bg_wait (background). Experiments made with an older version open and run as they are (the old names are aliases) and are saved with the new names; item names and log variables stay the same. An experiment saved with this version can't be used with an older version. Error messages name the items by their new names
@@ -165,7 +173,8 @@ Final release for OpenSesame 3 API
 
 - First release
 
-[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/6.0.0...HEAD
+[Unreleased]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/7.0.0...HEAD
+[7.0.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/6.0.0...7.0.0
 [6.0.0]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.3...6.0.0
 [5.4.3]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.2...5.4.3
 [5.4.2]: https://github.com/dev-jam/opensesame-plugin-radboudbox/compare/5.4.1...5.4.2

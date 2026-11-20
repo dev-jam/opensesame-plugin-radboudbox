@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- fixed: the responses of radboudbox_collect_buttons_fg and _bg_start did not count in OpenSesame's feedback variables (acc, avg_rt, total_responses, total_correct, total_response_time): a feedback item showed undefined, or only the responses of other items. They count now, as those of keyboard_response; acc and avg_rt of an experiment that also has other response items change accordingly
+- fixed: no response within the timeout (logged as NA) was always incorrect when the correct response was None, OpenSesame's name for a timeout (e.g. no-go trials); it is correct now for None as for NA
+- fixed: in dummy mode a key press was incorrect when the correct response had the other case (key 'a', correct response A); keys now match as in keyboard_response
+
 ## [6.0.0] - 2026-11-08
 
 - changed: the items that collect buttons have new names: radboudbox_wait_buttons is now radboudbox_collect_buttons_fg (foreground), radboudbox_get_buttons_start and radboudbox_get_buttons_wait are radboudbox_collect_buttons_bg_start and radboudbox_collect_buttons_bg_wait (background). Experiments made with an older version open and run as they are (the old names are aliases) and are saved with the new names; item names and log variables stay the same. An experiment saved with this version can't be used with an older version. Error messages name the items by their new names

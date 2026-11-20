@@ -34,6 +34,10 @@ from openexp.keyboard import Keyboard
 # that a bg stop item ends it within this time
 STOP_POLL_TIME = 0.01
 
+# Correct responses that a timeout matches: the plugin logs it as 'NA',
+# OpenSesame's own response items as None
+NO_RESPONSE = ('NA', 'None')
+
 
 class RadboudboxItem(Item):
     """Base class of the Radboud Buttonbox items."""
@@ -66,6 +70,10 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
     # True for the bg start item, which collects in a thread that a bg stop
     # item can end
     background = False
+
+    # The responses count in OpenSesame's feedback variables (acc, avg_rt,
+    # total_responses, ...), as those of its own response items
+    process_feedback = True
 
     def reset(self):
         self.var.timeout = 'infinite'
@@ -103,6 +111,17 @@ class RadboudboxResponseItem(RadboudboxItem, BaseResponseItem):
                                       keylist=self._allowed_responses,
                                       timeout=self._timeout)
             return self._keyboard.get_key
+
+    def response_matches(self, test, ref):
+        """A timeout ('NA') matches NA and OpenSesame's None. In dummy mode
+        a key matches its synonyms (a and A), as in keyboard_response; the
+        buttons of the box stay case sensitive (A press, a release).
+        """
+        if test == 'NA':
+            return any(r in NO_RESPONSE for r in ref)
+        if self.dummy_mode:
+            return any(r in self._keyboard.synonyms(test) for r in ref)
+        return test in ref
 
     def process_response(self, response_args):
         response, t1 = response_args

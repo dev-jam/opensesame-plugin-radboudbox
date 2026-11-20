@@ -37,6 +37,8 @@ This plugin has seven items:
 - **radboudbox_send_control** sends a control command to the buttonbox, for example 'Calibrate Sound' or 'Detect Sound'.
 - **radboudbox_send_trigger** sends a trigger to hardware with a parallel port, e.g. an EEG system.
 
+**Placing the background items.** Put radboudbox_collect_buttons_bg_start and its radboudbox_collect_buttons_bg_wait or radboudbox_collect_buttons_bg_stop item in the same sequence, e.g. the trial sequence (one of them may be in a sequence inside it). When the start item runs, it checks that a wait or stop item has been prepared. OpenSesame prepares a sequence and the sequences in it before it runs them, but the item of a loop only when that loop runs. A start item outside a loop with its wait or stop item inside the loop therefore stops the experiment with the error that the wait or stop item is missing. At the end of the experiment, a collection that no wait or stop item ended gives a warning that its responses may be missing from the log file (also in dummy mode).
+
 **Renamed items (6.0.0).** radboudbox_wait_buttons is now radboudbox_collect_buttons_fg, radboudbox_get_buttons_start is radboudbox_collect_buttons_bg_start and radboudbox_get_buttons_wait is radboudbox_collect_buttons_bg_wait. Experiments made with an older version open and run as they are, and OpenSesame saves them with the new item types; the names of the items, and so the variables in the log file, stay the same. An experiment saved with 6.0.0 or later needs 6.0.0 or later: an older version doesn't know the new item types (OpenSesame 4.1 then runs the experiment without these items, after a warning that a plugin is missing).
 
 

@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
 ## [7.0.0] - 2026-11-20
 
 - fixed: the responses of radboudbox_collect_buttons_fg and _bg_start did not count in OpenSesame's feedback variables (acc, avg_rt, total_responses, total_correct, total_response_time): a feedback item showed undefined, or only the responses of other items. They count now, as those of keyboard_response; acc and avg_rt of an experiment that also has other response items change accordingly

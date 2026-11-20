@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+- fixed: in dummy mode, a background collection that no radboudbox_collect_buttons_bg_wait or _bg_stop item ended gave no warning at the end of the experiment; it now gives the same warning as with the box
+
 ## [7.0.0] - 2026-11-20
 
 - fixed: the responses of radboudbox_collect_buttons_fg and _bg_start did not count in OpenSesame's feedback variables (acc, avg_rt, total_responses, total_correct, total_response_time): a feedback item showed undefined, or only the responses of other items. They count now, as those of keyboard_response; acc and avg_rt of an experiment that also has other response items change accordingly
